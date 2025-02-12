@@ -1,0 +1,60 @@
+// General
+"Cancel" = "Cancel";
+"Save" = "Save";
+"Edit" = "Edit";
+"Delete" = "Delete";
+"Confirm" = "Confirm";
+
+// Titles
+"Wallet" = "Wallet";
+"Cards" = "Cards";
+"Receipts" = "Receipts";
+
+// Card Management
+"Add Card" = "Add Card";
+"Edit Card" = "Edit Card";
+"Delete Card" = "Delete Card";
+"Merchant Name" = "Merchant Name";
+"Card Number" = "Card Number";
+"Card Color" = "Card Color";
+"Scan Barcode" = "Scan Barcode";
+"Photos" = "Photos";
+"Note" = "Note";
+
+// Tips
+"Scan Barcode Tip" = "Align barcode within the frame";
+"Delete Confirmation" = "Confirm Delete";
+"Delete Warning" = "Are you sure you want to delete this card? This action cannot be undone.";
+
+// Note Feature
+"Edit Note" = "Edit Note";
+"Clear Note" = "Clear Note";
+"Note" = "Note";
+
+// Photo Feature
+"Photos" = "Photos";
+"No Photos" = "No Photos";
+"Add photos to your card" = "Add photos to your card";
+"Delete Photo" = "Delete Photo";
+"Save to Photos" = "Save to Photos";
+"Delete Photo Warning" = "Are you sure you want to delete this photo?";
+"Done" = "Done";
+
+// Search Feature
+"Search cards" = "Search cards";
+"No Cards" = "No Cards";
+"No Results" = "No Results";
+"Add your first card" = "Add your first card";
+"Try a different search" = "Try a different search";
+
+// Search History
+"Recent Searches" = "Recent Searches";
+"Clear History" = "Clear History";
+
+// Sort Feature
+"Sort" = "Sort";
+"Sort By" = "Sort By";
+"Name (A to Z)" = "Name (A to Z)";
+"Name (Z to A)" = "Name (Z to A)";
+"Newest First" = "Newest First";
+"Oldest First" = "Oldest First"; 

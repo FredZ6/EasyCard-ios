@@ -1,0 +1,60 @@
+// 通用
+"Cancel" = "取消";
+"Save" = "保存";
+"Edit" = "编辑";
+"Delete" = "删除";
+"Confirm" = "确认";
+
+// 标题
+"Wallet" = "钱包";
+"Cards" = "卡片";
+"Receipts" = "收据";
+
+// 卡片管理
+"Add Card" = "添加卡片";
+"Edit Card" = "编辑卡片";
+"Delete Card" = "删除卡片";
+"Merchant Name" = "商家名称";
+"Card Number" = "卡号";
+"Card Color" = "卡片颜色";
+"Scan Barcode" = "扫描条形码";
+"Photos" = "照片";
+"Note" = "备注";
+
+// 提示信息
+"Scan Barcode Tip" = "将条形码对准框内";
+"Delete Confirmation" = "确认删除";
+"Delete Warning" = "确定要删除这张卡片吗？此操作无法撤销。";
+
+// 备注功能
+"Edit Note" = "编辑备注";
+"Clear Note" = "清除备注";
+"Note" = "备注";
+
+// 照片功能
+"Photos" = "照片";
+"No Photos" = "暂无照片";
+"Add photos to your card" = "为您的卡片添加照片";
+"Delete Photo" = "删除照片";
+"Save to Photos" = "保存到相册";
+"Delete Photo Warning" = "确定要删除这张照片吗？";
+"Done" = "完成";
+
+// 搜索功能
+"Search cards" = "搜索卡片";
+"No Cards" = "暂无卡片";
+"No Results" = "无搜索结果";
+"Add your first card" = "添加您的第一张卡片";
+"Try a different search" = "尝试其他搜索关键词";
+
+// 搜索历史
+"Recent Searches" = "最近搜索";
+"Clear History" = "清除历史记录";
+
+// 排序功能
+"Sort" = "排序";
+"Sort By" = "排序方式";
+"Name (A to Z)" = "名称 (A 到 Z)";
+"Name (Z to A)" = "名称 (Z 到 A)";
+"Newest First" = "最新添加";
+"Oldest First" = "最早添加"; 
