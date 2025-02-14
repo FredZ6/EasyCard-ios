@@ -13,31 +13,49 @@ struct CardDetailView: View {
     @State private var showingPhotosSheet = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            // 条形码卡片
-            VStack {
-                Color(hex: card.backgroundColor)
-                    .frame(height: 60)
-                
-                VStack(spacing: 16) {
-                    if let image = barcodeImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 100)
-                    }
+        List {
+            // Membership Card View
+            Section {
+                VStack(spacing: 0) {
+                    // Top Color Area
+                    Color(hex: card.backgroundColor)
+                        .frame(height: 60)
+                        .overlay {
+                            if let logoName = card.logoName, 
+                               let _ = UIImage(named: logoName) {
+                                Image(logoName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 24)
+                            }
+                        }
                     
-                    Text(card.cardNumber)
-                        .font(.system(.body, design: .monospaced))
+                    // Barcode Area
+                    VStack(spacing: 8) {
+                        if let image = barcodeImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 120)
+                                .padding(.horizontal, 12)
+                        }
+                        
+                        Text(card.cardNumber)
+                            .font(.system(.subheadline, design: .monospaced))
+                            .foregroundColor(.black)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(.white)
                 }
-                .padding()
-                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(radius: 3, x: 0, y: 1)
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                .listRowBackground(Color.clear)
             }
-            .cornerRadius(12)
-            .shadow(radius: 2)
             
-            // 管理选项
-            List {
+            // Management Options
+            Section {
                 Button(action: { showingEditSheet = true }) {
                     Label(LocalizedStringKey("Edit Card"), systemImage: "pencil")
                 }
@@ -49,46 +67,53 @@ struct CardDetailView: View {
                 Button(action: { showingNoteSheet = true }) {
                     Label(LocalizedStringKey("Note"), systemImage: "note.text")
                 }
-                
-                if !card.note.isEmpty {
-                    Section(header: Text(LocalizedStringKey("Note"))) {
-                        Text(card.note)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
+            }
+            
+            // Note Area
+            if !card.note.isEmpty {
+                Section(header: Text(LocalizedStringKey("Note"))) {
+                    Text(card.note)
+                        .font(.body)
+                        .foregroundColor(.secondary)
                 }
-                
-                if !card.photos.isEmpty {
-                    Section(header: Text(LocalizedStringKey("Photos"))) {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(card.photos.prefix(4)) { photo in
-                                    if let uiImage = UIImage(data: photo.imageData) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 60, height: 60)
-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    }
-                                }
-                                
-                                if card.photos.count > 4 {
-                                    Text("+\(card.photos.count - 4)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+            }
+            
+            // Photo Preview Area
+            if !card.photos.isEmpty {
+                Section(header: Text(LocalizedStringKey("Photos"))) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(card.photos.prefix(4)) { photo in
+                                if let uiImage = UIImage(data: photo.imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
                                 }
                             }
+                            
+                            if card.photos.count > 4 {
+                                Text("+\(card.photos.count - 4)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 8)
                     }
+                    .listRowInsets(EdgeInsets())
                 }
-                
+            }
+            
+            // Delete Button
+            Section {
                 Button(action: { showingDeleteAlert = true }) {
                     Label(LocalizedStringKey("Delete Card"), systemImage: "trash")
                         .foregroundColor(.red)
                 }
             }
-            .listStyle(InsetGroupedListStyle())
         }
+        .listStyle(InsetGroupedListStyle())
         .navigationTitle(card.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {

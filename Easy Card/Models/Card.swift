@@ -4,14 +4,14 @@ struct Card: Identifiable, Codable {
     var id: UUID
     var name: String
     var cardNumber: String
-    var logoName: String
+    var logoName: String?
     var backgroundColor: String
     var shortName: String
     var note: String
     var photos: [CardPhoto]
     var createdAt: Date
     
-    init(id: UUID = UUID(), name: String, cardNumber: String, logoName: String, backgroundColor: String, shortName: String, note: String = "", photos: [CardPhoto] = [], createdAt: Date = Date()) {
+    init(id: UUID = UUID(), name: String, cardNumber: String, logoName: String? = nil, backgroundColor: String, shortName: String, note: String = "", photos: [CardPhoto] = [], createdAt: Date = Date()) {
         self.id = id
         self.name = name
         self.cardNumber = cardNumber
