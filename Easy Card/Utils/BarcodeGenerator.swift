@@ -11,9 +11,25 @@ struct BarcodeGenerator {
         
         guard let outputImage = filter.outputImage else { return nil }
         
-        let context = CIContext()
-        let cgImage = context.createCGImage(outputImage, from: outputImage.extent)
+        let context = CIContext(options: [.useSoftwareRenderer: false])
         
-        return UIImage(cgImage: cgImage!)
+        let scale: CGFloat = 10.0
+        let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        
+        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
+            return nil
+        }
+        
+        let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .up)
+        
+        UIGraphicsBeginImageContextWithOptions(uiImage.size, true, 0.0)
+        defer { UIGraphicsEndImageContext() }
+        
+        UIColor.white.setFill()
+        UIBezierPath(rect: CGRect(origin: .zero, size: uiImage.size)).fill()
+        
+        uiImage.draw(in: CGRect(origin: .zero, size: uiImage.size))
+        
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
 } 
