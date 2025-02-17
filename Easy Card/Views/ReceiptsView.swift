@@ -38,53 +38,54 @@ struct ReceiptsView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Search Bar
-                VStack(spacing: 8) {
-                    Picker("Search Type", selection: $searchType) {
-                        Text("Store").tag(SearchType.store)
-                        Text("Date").tag(SearchType.date)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 4)
-                    
-                    HStack(spacing: 12) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                                .font(.system(size: 16))
-                            
-                            TextField(searchType == .store ? "Search by store name" : "Search by date (yyyy/MM/dd)", 
-                                    text: $searchText)
-                                .keyboardType(searchType == .date ? .numberPad : .default)
-                            
-                            if !searchText.isEmpty {
-                                Button(action: { searchText = "" }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.gray)
-                                        .font(.system(size: 16))
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Search Bar
+                    VStack(spacing: 8) {
+                        Picker("Search Type", selection: $searchType) {
+                            Text("Store").tag(SearchType.store)
+                            Text("Date").tag(SearchType.date)
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal, 4)
+                        
+                        HStack(spacing: 12) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                    .font(.system(size: 16))
+                                
+                                TextField(searchType == .store ? "Search by store name" : "Search by date (yyyy/MM/dd)", 
+                                        text: $searchText)
+                                    .keyboardType(searchType == .date ? .numberPad : .default)
+                                
+                                if !searchText.isEmpty {
+                                    Button(action: { searchText = "" }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.gray)
+                                            .font(.system(size: 16))
+                                    }
                                 }
                             }
+                            .padding(10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
                         }
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
                     }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-                
-                // Category Picker
-                Picker("Category", selection: $selectedCategory) {
-                    Text("Recent").tag(ReceiptCategory.recent)
-                    Text("By Date").tag(ReceiptCategory.byDate)
-                    Text("By Store").tag(ReceiptCategory.byStore)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                
-                // Content based on selected category
-                ScrollView {
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+                    
+                    // Category Picker
+                    Picker("Category", selection: $selectedCategory) {
+                        Text("Recent").tag(ReceiptCategory.recent)
+                        Text("By Date").tag(ReceiptCategory.byDate)
+                        Text("By Store").tag(ReceiptCategory.byStore)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+                    
+                    // Content based on selected category
                     switch selectedCategory {
                     case .recent:
                         RecentReceiptsView(receipts: filteredReceipts.sorted { $0.date > $1.date })
@@ -145,22 +146,60 @@ class ReceiptStore: ObservableObject {
         // Create sample receipts with colored rectangles
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 200, height: 300))
         
-        let colors: [UIColor] = [.systemBlue, .systemGreen, .systemRed]
+        let colors: [UIColor] = [
+            .systemBlue, .systemGreen, .systemRed,
+            .systemOrange, .systemPurple, .systemTeal,
+            .systemYellow, .systemPink, .systemIndigo,
+            .systemBrown, .systemMint, .systemCyan
+        ]
+        
+        let storeNames = [
+            "Walmart", "Target", "Costco",
+            "Best Buy", "Apple Store", "Amazon",
+            "IKEA", "Home Depot", "Starbucks",
+            "McDonald's", "7-Eleven", "Walgreens"
+        ]
+        
         var sampleReceipts: [Receipt] = []
         
-        for (index, color) in colors.enumerated() {
+        for (index, (color, store)) in zip(colors, storeNames).enumerated() {
             let image = renderer.image { context in
                 color.setFill()
+                // 添加一些简单的图案使示例更容易区分
                 context.fill(CGRect(x: 0, y: 0, width: 200, height: 300))
+                
+                // 添加商店名称文本
+                let text = store as NSString
+                let attributes: [NSAttributedString.Key: Any] = [
+                    .foregroundColor: UIColor.white,
+                    .font: UIFont.boldSystemFont(ofSize: 20)
+                ]
+                let textRect = CGRect(x: 20, y: 140, width: 160, height: 30)
+                text.draw(in: textRect, withAttributes: attributes)
             }
             
             if let imageData = image.jpegData(compressionQuality: 0.8) {
-                let date = Calendar.current.date(byAdding: .day, value: -index, to: Date())!
-                let storeNames = ["Walmart", "Target", "Costco"]
-                let receipt = Receipt(imageData: imageData, 
-                                    date: date, 
-                                    storeName: storeNames[index])
+                // 创建不同的日期，跨越多个月
+                let daysAgo = -index * 3 // 每个收据间隔3天
+                let date = Calendar.current.date(byAdding: .day, value: daysAgo, to: Date())!
+                
+                let receipt = Receipt(
+                    imageData: imageData,
+                    date: date,
+                    storeName: store
+                )
                 sampleReceipts.append(receipt)
+                
+                // 为每个商店添加多个收据
+                if index < 6 { // 前6个商店添加额外的收据
+                    let additionalDate = Calendar.current.date(byAdding: .day, value: daysAgo - 15, to: Date())!
+                    let additionalReceipt = Receipt(
+                        imageData: imageData,
+                        date: additionalDate,
+                        storeName: store
+                    )
+                    sampleReceipts.append(additionalReceipt)
+                }
             }
         }
         
