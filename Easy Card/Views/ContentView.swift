@@ -10,7 +10,7 @@ struct ContentView: View {
                     .navigationTitle(LocalizedStringKey("Cards"))
             }
             .tabItem {
-                Image(systemName: "bag")
+                Image(systemName: "creditcard")
                 Text(LocalizedStringKey("Cards"))
             }
             
@@ -19,10 +19,10 @@ struct ContentView: View {
                     Label("Receipts", systemImage: "doc.text")
                 }
             
-            Text(LocalizedStringKey("Wallet"))
+            Text(LocalizedStringKey("Profile"))
                 .tabItem {
-                    Image(systemName: "wallet.pass")
-                    Text(LocalizedStringKey("Wallet"))
+                    Image(systemName: "person.circle")
+                    Text(LocalizedStringKey("Profile"))
                 }
         }
         .environmentObject(cardStore)

@@ -2,8 +2,8 @@ import SwiftUI
 
 struct EditCardView: View {
     @Environment(\.dismiss) private var dismiss
-    let card: Card
-    let onSave: (Card) -> Void
+    @Binding var card: Card
+    @EnvironmentObject private var cardStore: CardStore
     
     @State private var cardName: String
     @State private var cardNumber: String
@@ -15,24 +15,23 @@ struct EditCardView: View {
         "#000000", "#4B0082", "#800080"
     ]
     
-    init(card: Card, onSave: @escaping (Card) -> Void) {
-        self.card = card
-        self.onSave = onSave
-        _cardName = State(initialValue: card.name)
-        _cardNumber = State(initialValue: card.cardNumber)
-        _selectedColor = State(initialValue: card.backgroundColor)
+    init(card: Binding<Card>) {
+        self._card = card
+        _cardName = State(initialValue: card.wrappedValue.name)
+        _cardNumber = State(initialValue: card.wrappedValue.cardNumber)
+        _selectedColor = State(initialValue: card.wrappedValue.backgroundColor)
     }
     
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("卡片信息")) {
-                    TextField("商家名称", text: $cardName)
-                    TextField("卡号", text: $cardNumber)
+                Section(header: Text(LocalizedStringKey("Card Information"))) {
+                    TextField(LocalizedStringKey("Merchant Name"), text: $cardName)
+                    TextField(LocalizedStringKey("Card Number"), text: $cardNumber)
                         .keyboardType(.numberPad)
                 }
                 
-                Section(header: Text("卡片颜色")) {
+                Section(header: Text(LocalizedStringKey("Card Color"))) {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 44))
                     ], spacing: 8) {
@@ -55,43 +54,50 @@ struct EditCardView: View {
                     Button(action: {
                         showingScanner = true
                     }) {
-                        Label("扫描条形码", systemImage: "barcode.viewfinder")
+                        Label(LocalizedStringKey("Scan Barcode"), systemImage: "barcode.viewfinder")
                     }
                 }
             }
-            .navigationTitle("编辑卡片")
+            .navigationTitle(LocalizedStringKey("Edit Card"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
+                    Button(LocalizedStringKey("Cancel")) {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button(LocalizedStringKey("Save")) {
                         saveCard()
                     }
                     .disabled(cardName.isEmpty || cardNumber.isEmpty)
                 }
             }
-            .sheet(isPresented: $showingScanner) {
-                BarcodeScannerView(cardNumber: $cardNumber)
-            }
+        }
+        .onChange(of: cardNumber) { _, newValue in
+            card.cardNumber = newValue
+        }
+        .onChange(of: cardName) { _, newValue in
+            card.name = newValue
+        }
+        .onChange(of: selectedColor) { _, newValue in
+            card.backgroundColor = newValue
+        }
+        .sheet(isPresented: $showingScanner) {
+            BarcodeScannerView(cardNumber: $cardNumber)
         }
     }
     
     private func saveCard() {
         let shortName = String(cardName.prefix(1).uppercased())
-        let updatedCard = Card(
-            id: card.id,
-            name: cardName,
-            cardNumber: cardNumber,
-            logoName: cardName.lowercased(),
-            backgroundColor: selectedColor,
-            shortName: shortName
-        )
-        onSave(updatedCard)
+        card.name = cardName
+        card.cardNumber = cardNumber
+        card.backgroundColor = selectedColor
+        card.shortName = shortName
+        card.logoName = cardName.lowercased()
+        
+        cardStore.updateCard(card)
         dismiss()
     }
 } 

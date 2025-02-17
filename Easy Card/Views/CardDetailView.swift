@@ -4,10 +4,17 @@ import CoreImage
 struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var cardStore: CardStore
+    @State private var showingEditSheet = false
+    @State private var editedCard: Card  // 用于存储编辑中的卡片
+    
     let card: Card
     
+    init(card: Card) {
+        self.card = card
+        _editedCard = State(initialValue: card)  // 初始化编辑中的卡片
+    }
+    
     @State private var barcodeImage: UIImage?
-    @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     @State private var showingNoteSheet = false
     @State private var showingPhotosSheet = false
@@ -18,10 +25,10 @@ struct CardDetailView: View {
             Section {
                 VStack(spacing: 0) {
                     // Top Color Area
-                    Color(hex: card.backgroundColor)
+                    Color(hex: editedCard.backgroundColor)
                         .frame(height: 60)
                         .overlay {
-                            if let logoName = card.logoName, 
+                            if let logoName = editedCard.logoName, 
                                let _ = UIImage(named: logoName) {
                                 Image(logoName)
                                     .resizable()
@@ -40,7 +47,7 @@ struct CardDetailView: View {
                                 .padding(.horizontal, 12)
                         }
                         
-                        Text(card.cardNumber)
+                        Text(editedCard.cardNumber)
                             .font(.system(.subheadline, design: .monospaced))
                             .foregroundColor(.black)
                     }
@@ -70,20 +77,20 @@ struct CardDetailView: View {
             }
             
             // Note Area
-            if !card.note.isEmpty {
+            if !editedCard.note.isEmpty {
                 Section(header: Text(LocalizedStringKey("Note"))) {
-                    Text(card.note)
+                    Text(editedCard.note)
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
             }
             
             // Photo Preview Area
-            if !card.photos.isEmpty {
+            if !editedCard.photos.isEmpty {
                 Section(header: Text(LocalizedStringKey("Photos"))) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(card.photos.prefix(4)) { photo in
+                            ForEach(editedCard.photos.prefix(4)) { photo in
                                 if let uiImage = UIImage(data: photo.imageData) {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -93,8 +100,8 @@ struct CardDetailView: View {
                                 }
                             }
                             
-                            if card.photos.count > 4 {
-                                Text("+\(card.photos.count - 4)")
+                            if editedCard.photos.count > 4 {
+                                Text("+\(editedCard.photos.count - 4)")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -114,15 +121,17 @@ struct CardDetailView: View {
             }
         }
         .listStyle(InsetGroupedListStyle())
-        .navigationTitle(card.name)
+        .navigationTitle(editedCard.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            barcodeImage = BarcodeGenerator.generateBarcode(from: card.cardNumber)
+            updateBarcodeImage()
+        }
+        .onChange(of: editedCard.cardNumber) { _, _ in
+            // 当卡号改变时更新条形码
+            updateBarcodeImage()
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditCardView(card: card) { updatedCard in
-                cardStore.updateCard(updatedCard)
-            }
+            EditCardView(card: $editedCard)
         }
         .alert(LocalizedStringKey("Delete Confirmation"), isPresented: $showingDeleteAlert) {
             Button(LocalizedStringKey("Delete"), role: .destructive) {
@@ -134,10 +143,20 @@ struct CardDetailView: View {
             Text(LocalizedStringKey("Delete Warning"))
         }
         .sheet(isPresented: $showingNoteSheet) {
-            NoteEditView(card: card)
+            NoteEditView(card: editedCard)
+                .onDisappear {
+                    // 当笔记编辑视图消失时，重新从 cardStore 获取更新后的卡片数据
+                    if let updatedCard = cardStore.cards.first(where: { $0.id == editedCard.id }) {
+                        editedCard = updatedCard
+                    }
+                }
         }
         .sheet(isPresented: $showingPhotosSheet) {
-            PhotosView(card: card)
+            PhotosView(card: editedCard)
         }
+    }
+    
+    private func updateBarcodeImage() {
+        barcodeImage = BarcodeGenerator.generateBarcode(from: editedCard.cardNumber)
     }
 } 
