@@ -33,17 +33,11 @@ struct BarcodeScannerView: View {
                 
                 Spacer()
                 
-                // Scanning Frame
+                // Scanning Frame (移除了红线动画)
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.white, lineWidth: 2)
                     .frame(height: 100)
                     .padding(.horizontal, 40)
-                    .overlay {
-                        Rectangle()
-                            .fill(Color.red.opacity(0.3))
-                            .frame(height: 2)
-                            .offset(y: camera.scanningLineOffset)
-                    }
                 
                 Spacer()
             }
