@@ -14,10 +14,9 @@ struct ContentView: View {
                 Text(LocalizedStringKey("Cards"))
             }
             
-            Text(LocalizedStringKey("Receipts"))
+            ReceiptsView()
                 .tabItem {
-                    Image(systemName: "doc.text")
-                    Text(LocalizedStringKey("Receipts"))
+                    Label("Receipts", systemImage: "doc.text")
                 }
             
             Text(LocalizedStringKey("Wallet"))
