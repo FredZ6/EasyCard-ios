@@ -42,32 +42,46 @@ struct ReceiptsView: View {
                 VStack(spacing: 0) {
                     // Search Bar
                     VStack(spacing: 8) {
-                        Picker("Search Type", selection: $searchType) {
-                            Text("Store").tag(SearchType.store)
-                            Text("Date").tag(SearchType.date)
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.horizontal, 4)
-                        
                         HStack(spacing: 12) {
                             HStack(spacing: 8) {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                    .font(.system(size: 16))
+                                // Search Type Selector
+                                Picker("Search Type", selection: $searchType) {
+                                    HStack {
+                                        Image(systemName: "building.2")
+                                        Text("Store")
+                                    }.tag(SearchType.store)
+                                    
+                                    HStack {
+                                        Image(systemName: "calendar")
+                                        Text("Date")
+                                    }.tag(SearchType.date)
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(.gray)
                                 
-                                TextField(searchType == .store ? "Search by store name" : "Search by date (yyyy/MM/dd)", 
-                                        text: $searchText)
-                                    .keyboardType(searchType == .date ? .numberPad : .default)
+                                Divider()
+                                    .frame(height: 20)
                                 
-                                if !searchText.isEmpty {
-                                    Button(action: { searchText = "" }) {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .foregroundColor(.gray)
-                                            .font(.system(size: 16))
+                                // Search TextField
+                                HStack(spacing: 8) {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 16))
+                                    
+                                    TextField(searchType == .store ? "Search by store name" : "(yyyy/MM/dd)", 
+                                            text: $searchText)
+                                        .keyboardType(searchType == .date ? .numberPad : .default)
+                                    
+                                    if !searchText.isEmpty {
+                                        Button(action: { searchText = "" }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .foregroundColor(.gray)
+                                                .font(.system(size: 16))
+                                        }
                                     }
                                 }
                             }
-                            .padding(10)
+                            .padding(8)
                             .background(Color(.systemGray6))
                             .cornerRadius(10)
                         }

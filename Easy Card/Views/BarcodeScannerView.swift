@@ -4,30 +4,57 @@ import AVFoundation
 struct BarcodeScannerView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var cardNumber: String
-    @StateObject private var scanner = BarcodeScanner()
+    @StateObject private var camera = CameraController()
     
     var body: some View {
         ZStack {
-            BarcodePreviewView(session: scanner.session)
+            // Camera Preview
+            CameraPreview(camera: camera)
                 .ignoresSafeArea()
             
+            // Scanning Frame
             VStack {
+                // Top Bar with Cancel Button
+                HStack {
+                    Button(action: { dismiss() }) {
+                        HStack {
+                            Image(systemName: "chevron.left")
+                            Text("Cancel")
+                        }
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(8)
+                        .background(.black.opacity(0.6))
+                        .cornerRadius(8)
+                    }
+                    Spacer()
+                }
+                .padding()
+                
                 Spacer()
-                Text(LocalizedStringKey("Scan Barcode Tip"))
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(.black.opacity(0.7))
-                    .cornerRadius(8)
+                
+                // Scanning Frame
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white, lineWidth: 2)
+                    .frame(height: 100)
+                    .padding(.horizontal, 40)
+                    .overlay {
+                        Rectangle()
+                            .fill(Color.red.opacity(0.3))
+                            .frame(height: 2)
+                            .offset(y: camera.scanningLineOffset)
+                    }
+                
                 Spacer()
             }
         }
         .onAppear {
-            scanner.start()
+            camera.start()
         }
         .onDisappear {
-            scanner.stop()
+            camera.stop()
         }
-        .onChange(of: scanner.scannedCode) { oldValue, newValue in
+        .onChange(of: camera.scannedCode) { _, newValue in
             if let code = newValue {
                 cardNumber = code
                 dismiss()
@@ -36,71 +63,72 @@ struct BarcodeScannerView: View {
     }
 }
 
-class BarcodeScanner: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
-    @Published var scannedCode: String?
-    let session = AVCaptureSession()
-    
-    override init() {
-        super.init()
-        setupSession()
-    }
-    
-    func start() {
-        if !session.isRunning {
-            DispatchQueue.global(qos: .background).async {
-                self.session.startRunning()
-            }
-        }
-    }
-    
-    func stop() {
-        if session.isRunning {
-            session.stopRunning()
-        }
-    }
-    
-    private func setupSession() {
-        guard let device = AVCaptureDevice.default(for: .video) else { return }
-        
-        do {
-            let input = try AVCaptureDeviceInput(device: device)
-            let output = AVCaptureMetadataOutput()
-            
-            if session.canAddInput(input) && session.canAddOutput(output) {
-                session.addInput(input)
-                session.addOutput(output)
-                
-                output.setMetadataObjectsDelegate(self, queue: .main)
-                output.metadataObjectTypes = [.ean8, .ean13, .pdf417]
-            }
-        } catch {
-            print("设置扫描器时出错：\(error.localizedDescription)")
-        }
-    }
-    
-    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        if let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
-           let code = metadataObject.stringValue {
-            scannedCode = code
-        }
-    }
-}
-
-struct BarcodePreviewView: UIViewRepresentable {
-    let session: AVCaptureSession
+// Camera Preview
+struct CameraPreview: UIViewRepresentable {
+    @ObservedObject var camera: CameraController
     
     func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.frame = view.bounds
-        previewLayer.videoGravity = .resizeAspectFill
+        let view = UIView(frame: UIScreen.main.bounds)
+        let previewLayer = camera.preview
+        previewLayer.frame = view.layer.bounds
         view.layer.addSublayer(previewLayer)
         return view
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {
-        if let previewLayer = uiView.layer.sublayers?.first as? AVCaptureVideoPreviewLayer {
-            previewLayer.frame = uiView.bounds
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+// Camera Controller
+class CameraController: NSObject, ObservableObject {
+    @Published var scannedCode: String?
+    @Published var scanningLineOffset: CGFloat = -50
+    
+    let preview = AVCaptureVideoPreviewLayer()
+    private let session = AVCaptureSession()
+    private let metadataOutput = AVCaptureMetadataOutput()
+    
+    override init() {
+        super.init()
+        setupCamera()
+        // 扫描线动画
+        withAnimation(.linear(duration: 1.5).repeatForever()) {
+            scanningLineOffset = 50
+        }
+    }
+    
+    private func setupCamera() {
+        guard let device = AVCaptureDevice.default(for: .video),
+              let input = try? AVCaptureDeviceInput(device: device) else { return }
+        
+        session.addInput(input)
+        session.addOutput(metadataOutput)
+        
+        metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+        metadataOutput.metadataObjectTypes = [.ean8, .ean13, .pdf417, .qr, .code128]
+        
+        preview.session = session
+        preview.videoGravity = .resizeAspectFill
+    }
+    
+    func start() {
+        DispatchQueue.global(qos: .background).async {
+            self.session.startRunning()
+        }
+    }
+    
+    func stop() {
+        session.stopRunning()
+    }
+}
+
+extension CameraController: AVCaptureMetadataOutputObjectsDelegate {
+    func metadataOutput(_ output: AVCaptureMetadataOutput, 
+                       didOutput metadataObjects: [AVMetadataObject], 
+                       from connection: AVCaptureConnection) {
+        if let metadataObject = metadataObjects.first,
+           let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject,
+           let stringValue = readableObject.stringValue {
+            scannedCode = stringValue
         }
     }
 } 

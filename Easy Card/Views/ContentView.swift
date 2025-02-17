@@ -7,7 +7,7 @@ struct ContentView: View {
         TabView {
             NavigationStack {
                 CardListView()
-                    .navigationTitle(LocalizedStringKey("Wallet"))
+                    .navigationTitle(LocalizedStringKey("Cards"))
             }
             .tabItem {
                 Image(systemName: "bag")

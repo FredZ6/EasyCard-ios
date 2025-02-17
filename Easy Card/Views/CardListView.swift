@@ -117,16 +117,22 @@ struct CardListView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
-                    Picker(selection: $selectedSortOption) {
-                        ForEach(SortOption.allCases, id: \.rawValue) { option in
-                            Text(option.localizedName)
-                                .tag(option.rawValue)
+                    Button(action: { showingAddCard = true }) {
+                        Label(LocalizedStringKey("Add Card"), systemImage: "plus.circle")
+                    }
+                    
+                    Menu(LocalizedStringKey("Sort By")) {
+                        Picker(selection: $selectedSortOption) {
+                            ForEach(SortOption.allCases, id: \.rawValue) { option in
+                                Text(option.localizedName)
+                                    .tag(option.rawValue)
+                            }
+                        } label: {
+                            Text(LocalizedStringKey("Sort By"))
                         }
-                    } label: {
-                        Text(LocalizedStringKey("Sort By"))
                     }
                 } label: {
-                    Label(LocalizedStringKey("Sort"), systemImage: "arrow.up.arrow.down")
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
@@ -165,6 +171,7 @@ struct AddCardButton: View {
         }
         .frame(height: 120)
         .frame(maxWidth: .infinity)
+        .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
     }
