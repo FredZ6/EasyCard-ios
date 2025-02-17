@@ -1,7 +1,7 @@
 import Foundation
 
 class CardStore: ObservableObject {
-    @Published var cards: [Card] = []
+    @Published private(set) var cards: [Card] = []
     private let saveKey = "SavedCards"
     
     init() {
@@ -22,6 +22,12 @@ class CardStore: ObservableObject {
     
     func deleteCard(_ card: Card) {
         cards.removeAll { $0.id == card.id }
+        saveCards()
+    }
+    
+    func moveCard(fromIndex: Int, toIndex: Int) {
+        let card = cards.remove(at: fromIndex)
+        cards.insert(card, at: toIndex)
         saveCards()
     }
     
