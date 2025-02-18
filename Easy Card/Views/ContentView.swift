@@ -18,12 +18,6 @@ struct ContentView: View {
                 .tabItem {
                     Label("Receipts", systemImage: "doc.text")
                 }
-            
-            Text(LocalizedStringKey("Profile"))
-                .tabItem {
-                    Image(systemName: "person.circle")
-                    Text(LocalizedStringKey("Profile"))
-                }
         }
         .environmentObject(cardStore)
     }

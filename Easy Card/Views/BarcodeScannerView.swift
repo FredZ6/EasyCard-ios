@@ -33,7 +33,7 @@ struct BarcodeScannerView: View {
                 
                 Spacer()
                 
-                // Scanning Frame (移除了红线动画)
+                // Scanning Frame (removed red line animation)
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.white, lineWidth: 2)
                     .frame(height: 100)

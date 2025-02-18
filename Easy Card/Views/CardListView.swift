@@ -2,7 +2,6 @@ import SwiftUI
 
 struct CardListView: View {
     @EnvironmentObject private var cardStore: CardStore
-    @StateObject private var searchHistory = SearchHistory()
     @State private var showingAddCard = false
     @State private var searchText = ""
     @State private var isEditMode = false
@@ -18,40 +17,43 @@ struct CardListView: View {
         }
     }
     
-    var searchSuggestions: [Card] {
-        if searchText.isEmpty {
-            return []
-        }
-        return cardStore.cards.filter { card in
-            card.name.localizedCaseInsensitiveContains(searchText) ||
-            card.cardNumber.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
-        Group {
-            if filteredCards.isEmpty {
-                ContentUnavailableView(
-                    searchText.isEmpty ? LocalizedStringKey("No Cards") : LocalizedStringKey("No Results"),
-                    systemImage: searchText.isEmpty ? "creditcard" : "magnifyingglass",
-                    description: Text(searchText.isEmpty ?
-                        LocalizedStringKey("Add your first card") :
-                        LocalizedStringKey("Try a different search"))
-                )
-            } else {
-                ScrollView {
-                    // Drag Hint Overlay
-                    if isEditMode {
-                        Text(LocalizedStringKey("Drag cards to reorder"))
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .padding(.top)
-                    }
+        VStack(spacing: 0) {
+            // Simple Search Bar
+            HStack {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
                     
+                    TextField(LocalizedStringKey("Search Cards"), text: $searchText)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+                .padding(8)
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+            }
+            .padding()
+            
+            // Cards Grid
+            ScrollView {
+                if filteredCards.isEmpty {
+                    ContentUnavailableView(
+                        searchText.isEmpty ? LocalizedStringKey("No Cards") : LocalizedStringKey("No Results"),
+                        systemImage: searchText.isEmpty ? "creditcard" : "magnifyingglass",
+                        description: Text(searchText.isEmpty ?
+                            LocalizedStringKey("Add your first card") :
+                            LocalizedStringKey("Try a different search"))
+                    )
+                    .padding(.top, 50)
+                } else {
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible())
@@ -63,12 +65,6 @@ struct CardListView: View {
                                         NSItemProvider(object: card.id.uuidString as NSString)
                                     }
                                     .onDrop(of: [.text], delegate: CardDropDelegate(item: card, items: filteredCards, cardStore: cardStore))
-                                    // 添加轻微的动画效果提示可拖拽
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.gray.opacity(0.3), lineWidth: 2)
-                                            .scaleEffect(0.98)
-                                    )
                             }
                         } else {
                             ForEach(filteredCards) { card in
@@ -85,54 +81,6 @@ struct CardListView: View {
                     .padding()
                 }
             }
-        }
-        .searchable(
-            text: $searchText,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: LocalizedStringKey("Search cards")
-        )
-        .searchSuggestions {
-            if searchText.isEmpty && !searchHistory.recentSearches.isEmpty {
-                Section(LocalizedStringKey("Recent Searches")) {
-                    ForEach(searchHistory.recentSearches, id: \.self) { search in
-                        Button {
-                            searchText = search
-                        } label: {
-                            Label(search, systemImage: "clock")
-                        }
-                        .searchCompletion(search)
-                    }
-                    
-                    Button(role: .destructive) {
-                        searchHistory.clearHistory()
-                    } label: {
-                        Label(LocalizedStringKey("Clear History"), systemImage: "trash")
-                    }
-                }
-            }
-            
-            ForEach(searchSuggestions) { card in
-                Button {
-                    searchText = card.name
-                } label: {
-                    VStack(alignment: .leading) {
-                        Text(card.name)
-                            .font(.headline)
-                        Text(card.cardNumber)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .searchCompletion(card.name)
-            }
-        }
-        .onChange(of: searchText) { _, newValue in
-            if !newValue.isEmpty {
-                searchHistory.addSearch(newValue)
-            }
-        }
-        .sheet(isPresented: $showingAddCard) {
-            AddCardView()
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -156,6 +104,9 @@ struct CardListView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showingAddCard) {
+            AddCardView()
         }
     }
 }

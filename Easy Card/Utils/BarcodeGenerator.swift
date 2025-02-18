@@ -3,17 +3,17 @@ import CoreImage
 
 struct BarcodeGenerator {
     static func generateBarcode(from string: String) -> UIImage? {
-        // 移除所有空格
+        // Remove all spaces
         let cleanString = string.replacingOccurrences(of: " ", with: "")
         
-        // 首先尝试 EAN-13 格式（如果输入是13位数字）
+        // First try EAN-13 format (if input is 13 digits)
         if cleanString.count == 13 && cleanString.allSatisfy({ $0.isNumber }) {
             if let ean13Image = generateEAN13(from: cleanString) {
                 return ean13Image
             }
         }
         
-        // 如果不是EAN-13，则使用Code 128（支持所有ASCII字符）
+        // If not EAN-13, use Code 128 (supports all ASCII characters)
         return generateCode128(from: cleanString)
     }
     

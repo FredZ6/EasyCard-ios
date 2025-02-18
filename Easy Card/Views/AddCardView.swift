@@ -131,6 +131,7 @@ struct AddCardView: View {
         let request = VNDetectBarcodesRequest { request, error in
             if let error = error {
                 DispatchQueue.main.async {
+                    // Handle error
                     self.alertMessage = error.localizedDescription
                     self.showingAlert = true
                     self.showingImagePicker = false
@@ -138,17 +139,17 @@ struct AddCardView: View {
                 return
             }
             
-            // 处理检测结果
+            // Process detection results
             if let results = request.results as? [VNBarcodeObservation],
                let result = results.first,
                let payload = result.payloadStringValue {
-                // 成功识别到条形码
+                // Successfully detected barcode
                 DispatchQueue.main.async {
                     self.cardNumber = payload
                     self.showingImagePicker = false
                 }
             } else {
-                // 没有识别到条形码
+                // No barcode detected
                 DispatchQueue.main.async {
                     self.alertMessage = NSLocalizedString("No valid barcode found in the image", 
                                                         comment: "Alert message when barcode detection fails")
