@@ -13,11 +13,6 @@ struct ContentView: View {
                 Image(systemName: "creditcard")
                 Text(LocalizedStringKey("Cards"))
             }
-            
-            ReceiptsView()
-                .tabItem {
-                    Label("Receipts", systemImage: "doc.text")
-                }
         }
         .environmentObject(cardStore)
     }
