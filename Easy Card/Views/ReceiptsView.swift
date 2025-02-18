@@ -121,7 +121,7 @@ struct ReceiptsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingCamera = true }) {
-                        Image(systemName: "camera")
+                        Image(systemName: "plus")
                     }
                 }
             }
