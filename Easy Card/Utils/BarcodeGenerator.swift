@@ -3,33 +3,55 @@ import CoreImage
 
 struct BarcodeGenerator {
     static func generateBarcode(from string: String) -> UIImage? {
-        let data = string.data(using: .ascii)
-        guard let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return nil }
+        // 移除所有空格
+        let cleanString = string.replacingOccurrences(of: " ", with: "")
         
-        filter.setValue(data, forKey: "inputMessage")
-        filter.setValue(10.0, forKey: "inputQuietSpace")
+        // 首先尝试 EAN-13 格式（如果输入是13位数字）
+        if cleanString.count == 13 && cleanString.allSatisfy({ $0.isNumber }) {
+            if let ean13Image = generateEAN13(from: cleanString) {
+                return ean13Image
+            }
+        }
         
-        guard let outputImage = filter.outputImage else { return nil }
-        
-        let context = CIContext(options: [.useSoftwareRenderer: false])
-        
-        let scale: CGFloat = 10.0
-        let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-        
-        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
+        // 如果不是EAN-13，则使用Code 128（支持所有ASCII字符）
+        return generateCode128(from: cleanString)
+    }
+    
+    private static func generateEAN13(from string: String) -> UIImage? {
+        guard let data = string.data(using: .ascii),
+              let filter = CIFilter(name: "CIEan13BarcodeGenerator") else {
             return nil
         }
         
-        let uiImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .up)
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue(NSNumber(value: 0), forKey: "inputQuietSpace")
         
-        UIGraphicsBeginImageContextWithOptions(uiImage.size, true, 0.0)
-        defer { UIGraphicsEndImageContext() }
+        return processFilterOutput(filter)
+    }
+    
+    private static func generateCode128(from string: String) -> UIImage? {
+        guard let data = string.data(using: .ascii),
+              let filter = CIFilter(name: "CICode128BarcodeGenerator") else {
+            return nil
+        }
         
-        UIColor.white.setFill()
-        UIBezierPath(rect: CGRect(origin: .zero, size: uiImage.size)).fill()
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue(NSNumber(value: 0), forKey: "inputQuietSpace")
         
-        uiImage.draw(in: CGRect(origin: .zero, size: uiImage.size))
+        return processFilterOutput(filter)
+    }
+    
+    private static func processFilterOutput(_ filter: CIFilter) -> UIImage? {
+        guard let outputImage = filter.outputImage else { return nil }
         
-        return UIGraphicsGetImageFromCurrentImageContext()
+        let transform = CGAffineTransform(scaleX: 10, y: 10)
+        let scaledImage = outputImage.transformed(by: transform)
+        
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: cgImage)
     }
 } 
