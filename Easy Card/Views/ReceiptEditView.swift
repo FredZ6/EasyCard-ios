@@ -10,6 +10,7 @@ struct ReceiptEditView: View {
     @State private var selectedImage: UIImage?
     @State private var showingImagePreview = false
     @State private var showingImageSourceOptions = false
+    @State private var selectedImagePath: String?
     
     init(receipt: Receipt) {
         _receipt = State(initialValue: receipt)
@@ -61,6 +62,7 @@ struct ReceiptEditView: View {
                                         .clipShape(RoundedRectangle(cornerRadius: 10))
                                         .onTapGesture {
                                             selectedImage = uiImage
+                                            selectedImagePath = imagePath
                                             showingImagePreview = true
                                         }
                                 }
@@ -98,9 +100,19 @@ struct ReceiptEditView: View {
         .sheet(isPresented: $showingCamera) {
             CameraView(images: $receipt.images)
         }
-        .fullScreenCover(isPresented: $showingImagePreview, content: {
-            ImagePreviewView(image: $selectedImage, isPresented: $showingImagePreview)
-        })
+        .fullScreenCover(isPresented: $showingImagePreview) {
+            ImagePreviewView(
+                image: $selectedImage,
+                isPresented: $showingImagePreview,
+                onDelete: {
+                    if let imagePath = selectedImagePath {
+                        try? FileManager.default.removeItem(atPath: imagePath)
+                        receipt.images.removeAll { $0 == imagePath }
+                        cardStore.updateReceipt(receipt)
+                    }
+                }
+            )
+        }
         .confirmationDialog("Choose Photo Source", isPresented: $showingImageSourceOptions) {
             Button("Take Photo") {
                 showingCamera = true
@@ -116,8 +128,8 @@ struct ReceiptEditView: View {
 struct ImagePreviewView: View {
     @Binding var image: UIImage?
     @Binding var isPresented: Bool
-    @State private var scale: CGFloat = 1.0
-    @State private var lastScale: CGFloat = 1.0
+    @State private var showingDeleteAlert = false
+    let onDelete: () -> Void
     
     var body: some View {
         NavigationStack {
@@ -127,28 +139,34 @@ struct ImagePreviewView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: geometry.size.width, height: geometry.size.height)
-                        .scaleEffect(scale)
-                        .gesture(
-                            MagnificationGesture()
-                                .onChanged { value in
-                                    let delta = value / lastScale
-                                    lastScale = value
-                                    scale = scale * delta
-                                }
-                                .onEnded { _ in
-                                    lastScale = 1.0
-                                }
-                        )
                 }
             }
             .background(Color.black)
             .edgesIgnoringSafeArea(.all)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(role: .destructive) {
+                        showingDeleteAlert = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         isPresented = false
                     }
                 }
+            }
+            .alert("Delete Photo", isPresented: $showingDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    onDelete()
+                    isPresented = false
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to delete this photo? This action cannot be undone.")
             }
         }
     }
