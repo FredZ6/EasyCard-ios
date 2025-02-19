@@ -85,33 +85,6 @@ struct CardDetailView: View {
                 }
             }
             
-            // Photo Preview Area
-            if !editedCard.photos.isEmpty {
-                Section(header: Text(LocalizedStringKey("Photos"))) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(editedCard.photos.prefix(4)) { photo in
-                                if let uiImage = UIImage(data: photo.imageData) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 60, height: 60)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                }
-                            }
-                            
-                            if editedCard.photos.count > 4 {
-                                Text("+\(editedCard.photos.count - 4)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    .listRowInsets(EdgeInsets())
-                }
-            }
-            
             // Delete Button
             Section {
                 Button(action: { showingDeleteAlert = true }) {
@@ -131,7 +104,9 @@ struct CardDetailView: View {
             updateBarcodeImage()
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditCardView(card: $editedCard)
+            NavigationStack {
+                EditCardView(card: editedCard)  // 直接传递 Card 而不是 Binding
+            }
         }
         .alert(LocalizedStringKey("Delete Confirmation"), isPresented: $showingDeleteAlert) {
             Button(LocalizedStringKey("Delete"), role: .destructive) {
@@ -153,6 +128,12 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showingPhotosSheet) {
             PhotosView(card: editedCard)
+                .onDisappear {
+                    // 当 PhotosView 消失时，从 cardStore 获取最新的卡片数据
+                    if let updatedCard = cardStore.cards.first(where: { $0.id == editedCard.id }) {
+                        editedCard = updatedCard
+                    }
+                }
         }
     }
     

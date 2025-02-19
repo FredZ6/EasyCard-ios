@@ -32,13 +32,11 @@ struct Card: Identifiable, Codable {
 }
 
 struct CardPhoto: Identifiable, Codable {
-    var id: UUID
-    var imageData: Data
-    var createdAt: Date
+    let id: UUID
+    let imagePath: String  // 存储文件路径而不是数据
     
-    init(id: UUID = UUID(), imageData: Data, createdAt: Date = Date()) {
+    init(id: UUID = UUID(), imagePath: String) {
         self.id = id
-        self.imageData = imageData
-        self.createdAt = createdAt
+        self.imagePath = imagePath
     }
 } 

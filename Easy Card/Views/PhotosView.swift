@@ -4,28 +4,62 @@ import PhotosUI
 struct PhotosView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var cardStore: CardStore
-    let card: Card
-    @State private var showingImagePicker = false
+    @State private var card: Card
     @State private var showingDeleteAlert = false
     @State private var selectedPhotoID: UUID?
     @State private var imageSelection: [PhotosPickerItem] = []
     
+    init(card: Card) {
+        _card = State(initialValue: card)
+    }
+    
     var body: some View {
-        NavigationView {
-            Group {
+        NavigationStack {
+            ZStack {
                 if card.photos.isEmpty {
                     EmptyPhotoView()
                 } else {
-                    PhotoGridView(
-                        photos: card.photos,
-                        onDeletePhoto: { photoID in
-                            selectedPhotoID = photoID
-                            showingDeleteAlert = true
+                    ScrollView {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ],
+                            spacing: 12
+                        ) {
+                            ForEach(card.photos) { photo in
+                                if let uiImage = UIImage(contentsOfFile: photo.imagePath) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(
+                                            width: (UIScreen.main.bounds.width - 48) / 3,
+                                            height: (UIScreen.main.bounds.width - 48) / 3
+                                        )
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .contextMenu {
+                                            Button(role: .destructive) {
+                                                selectedPhotoID = photo.id
+                                                showingDeleteAlert = true
+                                            } label: {
+                                                Label("Delete Photo", systemImage: "trash")
+                                            }
+                                            
+                                            Button {
+                                                UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
+                                            } label: {
+                                                Label("Save to Photos", systemImage: "square.and.arrow.down")
+                                            }
+                                        }
+                                }
+                            }
                         }
-                    )
+                        .padding()
+                    }
                 }
             }
-            .navigationTitle("照片")
+            .navigationTitle("Photos")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -39,7 +73,7 @@ struct PhotosView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("完成") {
+                    Button("Done") {
                         dismiss()
                     }
                 }
@@ -49,35 +83,39 @@ struct PhotosView: View {
                     var newPhotos: [CardPhoto] = []
                     for item in newItems {
                         if let data = try? await item.loadTransferable(type: Data.self) {
-                            newPhotos.append(CardPhoto(imageData: data))
+                            let filename = UUID().uuidString + ".jpg"
+                            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                            let fileURL = documentsDirectory.appendingPathComponent(filename)
+                            
+                            try? data.write(to: fileURL)
+                            
+                            newPhotos.append(CardPhoto(imagePath: fileURL.path))
                         }
                     }
                     if !newPhotos.isEmpty {
-                        var updatedCard = card
-                        updatedCard.photos.append(contentsOf: newPhotos)
-                        cardStore.updateCard(updatedCard)
+                        card.photos.append(contentsOf: newPhotos)
+                        cardStore.updateCard(card)
                     }
                     imageSelection.removeAll()
                 }
             }
-            .alert("删除照片", isPresented: $showingDeleteAlert) {
-                Button("删除", role: .destructive) {
+            .alert("Delete Photo", isPresented: $showingDeleteAlert) {
+                Button("Delete", role: .destructive) {
                     deletePhoto()
                 }
-                Button("取消", role: .cancel) {
+                Button("Cancel", role: .cancel) {
                     selectedPhotoID = nil
                 }
             } message: {
-                Text("确定要删除这张照片吗？")
+                Text("Are you sure you want to delete this photo?")
             }
         }
     }
     
     private func deletePhoto() {
         guard let photoID = selectedPhotoID else { return }
-        var updatedCard = card
-        updatedCard.photos.removeAll { $0.id == photoID }
-        cardStore.updateCard(updatedCard)
+        card.photos.removeAll { $0.id == photoID }
+        cardStore.updateCard(card)
         selectedPhotoID = nil
     }
 }
@@ -85,47 +123,17 @@ struct PhotosView: View {
 // MARK: - Subviews
 private struct EmptyPhotoView: View {
     var body: some View {
-        ContentUnavailableView(
-            "暂无照片",
-            systemImage: "photo.on.rectangle",
-            description: Text("点击右上角添加照片")
-        )
-    }
-}
-
-private struct PhotoGridView: View {
-    let photos: [CardPhoto]
-    let onDeletePhoto: (UUID) -> Void
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHGrid(rows: [GridItem(.fixed(100))], spacing: 10) {
-                ForEach(photos) { photo in
-                    if let uiImage = UIImage(data: photo.imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 100, height: 100)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    onDeletePhoto(photo.id)
-                                } label: {
-                                    Label("删除照片", systemImage: "trash")
-                                }
-                                
-                                Button {
-                                    UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
-                                } label: {
-                                    Label("保存到相册", systemImage: "square.and.arrow.down")
-                                }
-                            }
-                    }
-                }
+        ContentUnavailableView {
+            Label("No Photos", systemImage: "photo.on.rectangle.angled")
+        } description: {
+            VStack(spacing: 8) {
+                Text("Add photos of your membership card")
+                Text("(front and back)")
+                    .foregroundColor(.secondary)
+                Text("Tap + to add photos")
+                    .foregroundColor(.blue)
             }
-            .padding(.horizontal)
         }
-        .frame(height: photos.isEmpty ? 0 : 120)
     }
 } 
 
