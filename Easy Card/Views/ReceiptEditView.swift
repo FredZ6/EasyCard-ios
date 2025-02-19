@@ -14,8 +14,18 @@ struct ReceiptEditView: View {
     var body: some View {
         Form {
             Section {
-                TextField("Name", text: $receipt.name)
-                DatePicker("Date", selection: $receipt.date, displayedComponents: [.date])
+                HStack {
+                    Text("Name:")
+                        .foregroundColor(.secondary)
+                    TextField("Enter name", text: $receipt.name)
+                }
+                
+                HStack {
+                    Text("Date:")
+                        .foregroundColor(.secondary)
+                    DatePicker("", selection: $receipt.date, displayedComponents: [.date])
+                        .labelsHidden()
+                }
             }
             
             Section("Notes") {
@@ -55,12 +65,6 @@ struct ReceiptEditView: View {
                     } else {
                         cardStore.updateReceipt(receipt)
                     }
-                    dismiss()
-                }
-            }
-            
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
                     dismiss()
                 }
             }

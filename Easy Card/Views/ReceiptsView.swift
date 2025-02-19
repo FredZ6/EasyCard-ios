@@ -6,7 +6,8 @@ struct ReceiptsView: View {
     @State private var showingAddReceipt = false
     
     let columns = [
-        GridItem(.adaptive(minimum: 160), spacing: 16)
+        GridItem(.flexible()),
+        GridItem(.flexible())
     ]
     
     var filteredReceipts: [Receipt] {
@@ -18,18 +19,42 @@ struct ReceiptsView: View {
     }
     
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(filteredReceipts) { receipt in
-                    NavigationLink(destination: ReceiptEditView(receipt: receipt)) {
-                        ReceiptCardView(receipt: receipt)
-                            .frame(width: 160, height: 160)
+        VStack(spacing: 0) {
+            // Simple Search Bar
+            HStack {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    
+                    TextField("Search Receipts", text: $searchText)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
+                .padding(8)
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
             }
             .padding()
+            
+            // Receipts Grid
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(filteredReceipts) { receipt in
+                        NavigationLink(destination: ReceiptEditView(receipt: receipt)) {
+                            ReceiptCardView(receipt: receipt)
+                        }
+                    }
+                }
+                .padding()
+            }
         }
-        .searchable(text: $searchText, prompt: "Search Receipts")
         .navigationTitle("Receipts")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -60,30 +85,22 @@ struct ReceiptCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Main content area
-            ZStack {
-                backgroundColor
-                Text(receipt.name)
-                    .font(.system(size: 20))
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
-            }
+        VStack(alignment: .leading) {
+            Spacer()
+            Text(receipt.name)
+                .font(.title3)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
             
-            // Bottom date area
             Text(receipt.date.formatted(date: .abbreviated, time: .omitted))
-                .font(.system(size: 13))
+                .font(.caption)
                 .foregroundColor(.secondary)
-                .lineLimit(1)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.background)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .frame(height: 120)
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(backgroundColor)
+        .cornerRadius(12)
         .shadow(radius: 2, x: 0, y: 1)
     }
 }
