@@ -78,10 +78,15 @@ struct ReceiptCardView: View {
     
     var backgroundColor: Color {
         let colors: [Color] = [
-            .blue, .green, .orange, .purple, .pink
+            Color(hex: "0000FF"),  // Blue
+            Color(hex: "FF0000"),  // Red
+            Color(hex: "00AA88"),  // Teal
+            Color(hex: "000000"),  // Black
+            Color(hex: "4B0082"),  // Indigo
+            Color(hex: "800080")   // Purple
         ]
         let index = abs(receipt.id.hashValue) % colors.count
-        return colors[index].opacity(0.3)
+        return colors[index]
     }
     
     var body: some View {
@@ -90,11 +95,11 @@ struct ReceiptCardView: View {
             Text(receipt.name)
                 .font(.title3)
                 .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .foregroundColor(.white)
             
             Text(receipt.date.formatted(date: .abbreviated, time: .omitted))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.8))  // Semi-transparent white
         }
         .frame(height: 120)
         .padding()
