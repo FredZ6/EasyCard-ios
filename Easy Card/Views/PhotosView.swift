@@ -8,6 +8,8 @@ struct PhotosView: View {
     @State private var showingDeleteAlert = false
     @State private var selectedPhotoID: UUID?
     @State private var imageSelection: [PhotosPickerItem] = []
+    @State private var selectedImage: UIImage?
+    @State private var showingImagePreview = false
     
     init(card: Card) {
         _card = State(initialValue: card)
@@ -38,6 +40,11 @@ struct PhotosView: View {
                                             height: (UIScreen.main.bounds.width - 48) / 3
                                         )
                                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .onTapGesture {
+                                            selectedImage = uiImage
+                                            selectedPhotoID = photo.id
+                                            showingImagePreview = true
+                                        }
                                         .contextMenu {
                                             Button(role: .destructive) {
                                                 selectedPhotoID = photo.id
@@ -109,6 +116,18 @@ struct PhotosView: View {
             } message: {
                 Text("Are you sure you want to delete this photo?")
             }
+        }
+        .fullScreenCover(isPresented: $showingImagePreview) {
+            ImagePreviewView(
+                image: $selectedImage,
+                isPresented: $showingImagePreview,
+                onDelete: {
+                    if let photoID = selectedPhotoID {
+                        card.photos.removeAll { $0.id == photoID }
+                        cardStore.updateCard(card)
+                    }
+                }
+            )
         }
     }
     
