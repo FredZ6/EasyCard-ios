@@ -14,11 +14,14 @@ struct ContentView: View {
                 Text(LocalizedStringKey("Cards"))
             }
             
-            ReceiptsView()
-                .tabItem {
-                    Image(systemName: "receipt")
-                    Text(LocalizedStringKey("Receipts"))
-                }
+            NavigationStack {
+                ReceiptsView()
+                    .navigationTitle(LocalizedStringKey("Receipts"))
+            }
+            .tabItem {
+                Image(systemName: "receipt")
+                Text(LocalizedStringKey("Receipts"))
+            }
         }
         .environmentObject(cardStore)
     }

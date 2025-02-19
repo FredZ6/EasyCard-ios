@@ -5,7 +5,6 @@ struct PhotosView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var cardStore: CardStore
     let card: Card
-    
     @State private var showingImagePicker = false
     @State private var showingDeleteAlert = false
     @State private var selectedPhotoID: UUID?
@@ -26,22 +25,22 @@ struct PhotosView: View {
                     )
                 }
             }
-            .navigationTitle(LocalizedStringKey("Photos"))
+            .navigationTitle("照片")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(LocalizedStringKey("Done")) {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     PhotosPicker(
                         selection: $imageSelection,
                         maxSelectionCount: 10,
                         matching: .images
                     ) {
                         Image(systemName: "plus")
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("完成") {
+                        dismiss()
                     }
                 }
             }
@@ -61,15 +60,15 @@ struct PhotosView: View {
                     imageSelection.removeAll()
                 }
             }
-            .alert(LocalizedStringKey("Delete Photo"), isPresented: $showingDeleteAlert) {
-                Button(LocalizedStringKey("Delete"), role: .destructive) {
+            .alert("删除照片", isPresented: $showingDeleteAlert) {
+                Button("删除", role: .destructive) {
                     deletePhoto()
                 }
-                Button(LocalizedStringKey("Cancel"), role: .cancel) {
+                Button("取消", role: .cancel) {
                     selectedPhotoID = nil
                 }
             } message: {
-                Text(LocalizedStringKey("Delete Photo Warning"))
+                Text("确定要删除这张照片吗？")
             }
         }
     }
@@ -87,9 +86,9 @@ struct PhotosView: View {
 private struct EmptyPhotoView: View {
     var body: some View {
         ContentUnavailableView(
-            LocalizedStringKey("No Photos"),
+            "暂无照片",
             systemImage: "photo.on.rectangle",
-            description: Text(LocalizedStringKey("Add photos to your card"))
+            description: Text("点击右上角添加照片")
         )
     }
 }
@@ -99,41 +98,34 @@ private struct PhotoGridView: View {
     let onDeletePhoto: (UUID) -> Void
     
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 16) {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHGrid(rows: [GridItem(.fixed(100))], spacing: 10) {
                 ForEach(photos) { photo in
-                    PhotoGridItem(photo: photo, onDelete: onDeletePhoto)
+                    if let uiImage = UIImage(data: photo.imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 100, height: 100)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    onDeletePhoto(photo.id)
+                                } label: {
+                                    Label("删除照片", systemImage: "trash")
+                                }
+                                
+                                Button {
+                                    UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
+                                } label: {
+                                    Label("保存到相册", systemImage: "square.and.arrow.down")
+                                }
+                            }
+                    }
                 }
             }
-            .padding()
+            .padding(.horizontal)
         }
-    }
-}
-
-private struct PhotoGridItem: View {
-    let photo: CardPhoto
-    let onDelete: (UUID) -> Void
-    
-    var body: some View {
-        if let uiImage = UIImage(data: photo.imageData) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
-                .frame(height: 150)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .contextMenu {
-                    Button(role: .destructive) {
-                        onDelete(photo.id)
-                    } label: {
-                        Label(LocalizedStringKey("Delete Photo"), systemImage: "trash")
-                    }
-                    
-                    Button {
-                        UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
-                    } label: {
-                        Label(LocalizedStringKey("Save to Photos"), systemImage: "square.and.arrow.down")
-                    }
-                }
-        }
+        .frame(height: photos.isEmpty ? 0 : 120)
     }
 } 
+
