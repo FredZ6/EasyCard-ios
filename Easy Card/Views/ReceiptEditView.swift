@@ -14,16 +14,16 @@ struct ReceiptEditView: View {
     var body: some View {
         Form {
             Section {
-                TextField("名称", text: $receipt.name)
-                DatePicker("日期", selection: $receipt.date, displayedComponents: [.date, .hourAndMinute])
+                TextField("Name", text: $receipt.name)
+                DatePicker("Date", selection: $receipt.date, displayedComponents: [.date])
             }
             
-            Section("备注") {
+            Section("Notes") {
                 TextEditor(text: $receipt.note)
                     .frame(minHeight: 100)
             }
             
-            Section("照片") {
+            Section("Photos") {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHGrid(rows: [GridItem(.fixed(100))], spacing: 10) {
                         ForEach(receipt.images, id: \.self) { imagePath in
@@ -40,16 +40,16 @@ struct ReceiptEditView: View {
                 }
                 .frame(height: receipt.images.isEmpty ? 0 : 120)
                 
-                Button("添加照片") {
+                Button("Add Photo") {
                     showingImagePicker = true
                 }
             }
         }
-        .navigationTitle(receipt.id == UUID() ? "新建收据" : "编辑收据")
+        .navigationTitle(receipt.id == UUID() ? "New Receipt" : "Edit Receipt")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("保存") {
+                Button("Save") {
                     if receipt.id == UUID() {
                         cardStore.addReceipt(receipt)
                     } else {
@@ -60,7 +60,7 @@ struct ReceiptEditView: View {
             }
             
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("取消") {
+                Button("Cancel") {
                     dismiss()
                 }
             }

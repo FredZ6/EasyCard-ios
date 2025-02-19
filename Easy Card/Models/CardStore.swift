@@ -16,41 +16,41 @@ class CardStore: ObservableObject {
             receipts = [
                 Receipt(
                     id: UUID(),
-                    name: "家乐福超市",
-                    date: Date().addingTimeInterval(-86400 * 2), // 2天前
-                    note: "周末采购生活用品",
+                    name: "Walmart",
+                    date: Date().addingTimeInterval(-86400 * 2), // 2 days ago
+                    note: "Weekly grocery shopping",
                     images: []
                 ),
                 Receipt(
                     id: UUID(),
-                    name: "星巴克咖啡",
-                    date: Date().addingTimeInterval(-86400), // 1天前
-                    note: "和朋友下午茶",
+                    name: "Starbucks",
+                    date: Date().addingTimeInterval(-86400), // 1 day ago
+                    note: "Coffee with friends",
                     images: []
                 ),
                 Receipt(
                     id: UUID(),
-                    name: "优衣库",
+                    name: "Target",
                     date: Date(),
-                    note: "夏季服装购物",
+                    note: "Home supplies",
                     images: []
                 ),
                 Receipt(
                     id: UUID(),
-                    name: "苹果商店",
-                    date: Date().addingTimeInterval(-86400 * 5), // 5天前
-                    note: "购买新手机壳和充电器",
+                    name: "Apple Store",
+                    date: Date().addingTimeInterval(-86400 * 5), // 5 days ago
+                    note: "Phone case and charger",
                     images: []
                 ),
                 Receipt(
                     id: UUID(),
-                    name: "肯德基",
-                    date: Date().addingTimeInterval(-86400 * 3), // 3天前
-                    note: "午餐",
+                    name: "McDonald's",
+                    date: Date().addingTimeInterval(-86400 * 3), // 3 days ago
+                    note: "Lunch",
                     images: []
                 )
             ]
-            saveReceipts() // 保存示例数据
+            saveReceipts()
         }
     }
     
