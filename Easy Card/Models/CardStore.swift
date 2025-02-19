@@ -7,6 +7,8 @@ class CardStore: ObservableObject {
     @Published private(set) var receipts: [Receipt] = []
     @Published var searchText = ""
     
+    private let receiptsKey = "SavedReceipts"
+    
     init() {
         loadCards()
         loadReceipts()
@@ -95,7 +97,7 @@ class CardStore: ObservableObject {
     
     // 加载收据
     private func loadReceipts() {
-        if let data = UserDefaults.standard.data(forKey: "receipts") {
+        if let data = UserDefaults.standard.data(forKey: receiptsKey) {
             if let decoded = try? JSONDecoder().decode([Receipt].self, from: data) {
                 receipts = decoded
             }
@@ -105,14 +107,35 @@ class CardStore: ObservableObject {
     // 保存收据
     private func saveReceipts() {
         if let encoded = try? JSONEncoder().encode(receipts) {
-            UserDefaults.standard.set(encoded, forKey: "receipts")
+            UserDefaults.standard.set(encoded, forKey: receiptsKey)
+            print("💿 Receipts saved to UserDefaults - Count: \(receipts.count)")
+        } else {
+            print("❌ Failed to encode receipts")
         }
     }
     
     // 添加收据
     func addReceipt(_ receipt: Receipt) {
-        receipts.append(receipt)
+        print("📥 Starting to add receipt - Name: \(receipt.name)")
+        print("📊 Before adding - Current receipts count: \(receipts.count)")
+        
+        var newReceipt = receipt
+        newReceipt.id = UUID()
+        print("🆔 Generated new ID: \(newReceipt.id)")
+        
+        receipts.append(newReceipt)
+        print("📊 After adding - Current receipts count: \(receipts.count)")
+        
         saveReceipts()
+        print("💾 Saved to UserDefaults")
+        
+        // 验证保存
+        if let data = UserDefaults.standard.data(forKey: receiptsKey),
+           let savedReceipts = try? JSONDecoder().decode([Receipt].self, from: data) {
+            print("✅ Verified save - Saved receipts count: \(savedReceipts.count)")
+        } else {
+            print("❌ Failed to verify save")
+        }
     }
     
     // 更新收据

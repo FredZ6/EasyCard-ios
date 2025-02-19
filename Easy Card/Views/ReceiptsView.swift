@@ -3,7 +3,8 @@ import SwiftUI
 struct ReceiptsView: View {
     @EnvironmentObject private var cardStore: CardStore
     @State private var searchText = ""
-    @State private var showingAddReceipt = false
+    @State private var showingEditSheet = false
+    @State private var selectedReceipt: Receipt?
     
     let columns = [
         GridItem(.flexible()),
@@ -11,11 +12,14 @@ struct ReceiptsView: View {
     ]
     
     var filteredReceipts: [Receipt] {
-        if searchText.isEmpty {
-            return cardStore.receipts
+        let results = if searchText.isEmpty {
+            cardStore.receipts
         } else {
-            return cardStore.receipts.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            cardStore.receipts.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
+        print("📋 Filtered receipts count: \(results.count)")
+        print("📝 Current receipts: \(results.map { $0.name })")
+        return results
     }
     
     var body: some View {
@@ -47,9 +51,11 @@ struct ReceiptsView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(filteredReceipts) { receipt in
-                        NavigationLink(destination: ReceiptEditView(receipt: receipt)) {
-                            ReceiptCardView(receipt: receipt)
-                        }
+                        ReceiptCardView(receipt: receipt)
+                            .onTapGesture {
+                                selectedReceipt = receipt
+                                showingEditSheet = true
+                            }
                     }
                 }
                 .padding()
@@ -57,18 +63,40 @@ struct ReceiptsView: View {
         }
         .navigationTitle("Receipts")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    showingAddReceipt = true
+                    print("➕ Creating new receipt")
+                    let newReceipt = Receipt(
+                        id: UUID(),
+                        name: "",
+                        date: Date()
+                    )
+                    print("📄 New receipt created with ID: \(newReceipt.id)")
+                    selectedReceipt = newReceipt
+                    showingEditSheet = true
                 } label: {
                     Image(systemName: "plus")
                 }
             }
         }
-        .sheet(isPresented: $showingAddReceipt) {
-            NavigationStack {
-                ReceiptEditView(receipt: Receipt())
+        .sheet(isPresented: $showingEditSheet) {
+            if let receipt = selectedReceipt {
+                NavigationStack {
+                    ReceiptEditView(receipt: receipt)
+                        .environmentObject(cardStore)
+                }
             }
+        }
+        .onChange(of: showingEditSheet) { newValue in
+            if !newValue {
+                print("📋 Sheet dismissed")
+                selectedReceipt = nil
+                // 添加验证
+                print("📊 Current receipts after dismiss: \(cardStore.receipts.map { $0.name })")
+            }
+        }
+        .onAppear {
+            print("📱 ReceiptsView appeared - Current receipts count: \(cardStore.receipts.count)")
         }
     }
 }

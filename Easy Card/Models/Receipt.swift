@@ -8,7 +8,7 @@ struct Receipt: Identifiable, Codable {
     var note: String
     var images: [String] // 存储图片路径
     
-    init(id: UUID = UUID(), name: String = "", date: Date = Date(), note: String = "", images: [String] = []) {
+    init(id: UUID = UUID(), name: String, date: Date, note: String = "", images: [String] = []) {
         self.id = id
         self.name = name
         self.date = date

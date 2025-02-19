@@ -11,9 +11,14 @@ struct ReceiptEditView: View {
     @State private var selectedImagePath: String?
     @State private var showingImagePreview = false
     @State private var showingImageSourceOptions = false
+    @State private var showingDeleteAlert = false
+    private let isNewReceipt: Bool
     
     init(receipt: Receipt) {
         _receipt = State(initialValue: receipt)
+        self.isNewReceipt = receipt.id == UUID()
+        print("🔍 ReceiptEditView init - Receipt ID: \(receipt.id)")
+        print("📌 Is new receipt: \(self.isNewReceipt)")
     }
     
     var body: some View {
@@ -80,11 +85,50 @@ struct ReceiptEditView: View {
             } header: {
                 Text("Photos")
             }
+            
+            if receipt.id != UUID() {
+                Section {
+                    Button(role: .destructive) {
+                        showingDeleteAlert = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text("Delete Receipt")
+                        }
+                    }
+                }
+            }
         }
-        .navigationTitle(receipt.id == UUID() ? "New Receipt" : "Edit Receipt")
+        .navigationTitle(isNewReceipt ? "New Receipt" : "Edit Receipt")
         .navigationBarTitleDisplayMode(.inline)
-        .onDisappear {
-            saveReceipt()
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") {
+                    dismiss()
+                }
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Save") {
+                    print("💾 Starting save process...")
+                    print("📝 Receipt details - Name: \(receipt.name)")
+                    
+                    if !cardStore.receipts.contains(where: { $0.id == receipt.id }) {
+                        if !receipt.name.isEmpty {
+                            print("⭐️ Adding new receipt")
+                            cardStore.addReceipt(receipt)
+                        } else {
+                            print("⚠️ Cannot save receipt with empty name")
+                            return
+                        }
+                    } else {
+                        print("🔄 Updating existing receipt")
+                        cardStore.updateReceipt(receipt)
+                    }
+                    print("✅ Save completed")
+                    dismiss()
+                }
+            }
         }
         .sheet(isPresented: $showingImagePicker) {
             CustomImagePicker(images: $receipt.images)
@@ -114,13 +158,14 @@ struct ReceiptEditView: View {
                 }
             )
         }
-    }
-    
-    private func saveReceipt() {
-        if receipt.id == UUID() {
-            cardStore.addReceipt(receipt)
-        } else {
-            cardStore.updateReceipt(receipt)
+        .alert("Delete Receipt", isPresented: $showingDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                cardStore.deleteReceipt(receipt)
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to delete this receipt? This action cannot be undone.")
         }
     }
 }
