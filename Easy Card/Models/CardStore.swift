@@ -10,6 +10,48 @@ class CardStore: ObservableObject {
     init() {
         loadCards()
         loadReceipts()
+        
+        // 如果没有收据数据，添加示例数据
+        if receipts.isEmpty {
+            receipts = [
+                Receipt(
+                    id: UUID(),
+                    name: "家乐福超市",
+                    date: Date().addingTimeInterval(-86400 * 2), // 2天前
+                    note: "周末采购生活用品",
+                    images: []
+                ),
+                Receipt(
+                    id: UUID(),
+                    name: "星巴克咖啡",
+                    date: Date().addingTimeInterval(-86400), // 1天前
+                    note: "和朋友下午茶",
+                    images: []
+                ),
+                Receipt(
+                    id: UUID(),
+                    name: "优衣库",
+                    date: Date(),
+                    note: "夏季服装购物",
+                    images: []
+                ),
+                Receipt(
+                    id: UUID(),
+                    name: "苹果商店",
+                    date: Date().addingTimeInterval(-86400 * 5), // 5天前
+                    note: "购买新手机壳和充电器",
+                    images: []
+                ),
+                Receipt(
+                    id: UUID(),
+                    name: "肯德基",
+                    date: Date().addingTimeInterval(-86400 * 3), // 3天前
+                    note: "午餐",
+                    images: []
+                )
+            ]
+            saveReceipts() // 保存示例数据
+        }
     }
     
     func addCard(_ card: Card) {
