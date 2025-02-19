@@ -77,16 +77,7 @@ struct ReceiptCardView: View {
     let receipt: Receipt
     
     var backgroundColor: Color {
-        let colors: [Color] = [
-            Color(hex: "0000FF"),  // Blue
-            Color(hex: "FF0000"),  // Red
-            Color(hex: "00AA88"),  // Teal
-            Color(hex: "000000"),  // Black
-            Color(hex: "4B0082"),  // Indigo
-            Color(hex: "800080")   // Purple
-        ]
-        let index = abs(receipt.id.hashValue) % colors.count
-        return colors[index]
+        Color(hex: "000000")  // Black
     }
     
     var body: some View {

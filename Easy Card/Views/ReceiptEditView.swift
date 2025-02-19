@@ -8,9 +8,9 @@ struct ReceiptEditView: View {
     @State private var showingImagePicker = false
     @State private var showingCamera = false
     @State private var selectedImage: UIImage?
+    @State private var selectedImagePath: String?
     @State private var showingImagePreview = false
     @State private var showingImageSourceOptions = false
-    @State private var selectedImagePath: String?
     
     init(receipt: Receipt) {
         _receipt = State(initialValue: receipt)
@@ -19,18 +19,8 @@ struct ReceiptEditView: View {
     var body: some View {
         Form {
             Section {
-                HStack {
-                    Text("Name:")
-                        .foregroundColor(.secondary)
-                    TextField("Enter name", text: $receipt.name)
-                }
-                
-                HStack {
-                    Text("Date:")
-                        .foregroundColor(.secondary)
-                    DatePicker("", selection: $receipt.date, displayedComponents: [.date])
-                        .labelsHidden()
-                }
+                TextField("Name", text: $receipt.name)
+                DatePicker("Date", selection: $receipt.date, displayedComponents: [.date])
             }
             
             Section("Notes") {
@@ -51,29 +41,40 @@ struct ReceiptEditView: View {
                         }
                     }
                 } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHGrid(rows: [GridItem(.fixed(100))], spacing: 10) {
-                            ForEach(receipt.images, id: \.self) { imagePath in
-                                if let uiImage = UIImage(contentsOfFile: imagePath) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 100, height: 100)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .onTapGesture {
-                                            selectedImage = uiImage
-                                            selectedImagePath = imagePath
-                                            showingImagePreview = true
-                                        }
+                    VStack(spacing: 16) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHGrid(rows: [GridItem(.fixed(100))], spacing: 10) {
+                                ForEach(receipt.images, id: \.self) { imagePath in
+                                    if let uiImage = UIImage(contentsOfFile: imagePath) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 100, height: 100)
+                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                            .onTapGesture {
+                                                selectedImage = uiImage
+                                                selectedImagePath = imagePath
+                                                showingImagePreview = true
+                                            }
+                                    }
                                 }
                             }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
-                    }
-                    .frame(height: 120)
-                    
-                    Button("Add Photo") {
-                        showingImageSourceOptions = true
+                        .frame(height: 100)
+                        
+                        Divider()
+                        
+                        Button {
+                            showingImageSourceOptions = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Add Photo")
+                                    .foregroundColor(.blue)
+                            }
+                        }
                     }
                 }
             } header: {
@@ -82,17 +83,8 @@ struct ReceiptEditView: View {
         }
         .navigationTitle(receipt.id == UUID() ? "New Receipt" : "Edit Receipt")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Save") {
-                    if receipt.id == UUID() {
-                        cardStore.addReceipt(receipt)
-                    } else {
-                        cardStore.updateReceipt(receipt)
-                    }
-                    dismiss()
-                }
-            }
+        .onDisappear {
+            saveReceipt()
         }
         .sheet(isPresented: $showingImagePicker) {
             CustomImagePicker(images: $receipt.images)
@@ -121,6 +113,14 @@ struct ReceiptEditView: View {
                 showingImagePicker = true
             }
             Button("Cancel", role: .cancel) {}
+        }
+    }
+    
+    private func saveReceipt() {
+        if receipt.id == UUID() {
+            cardStore.addReceipt(receipt)
+        } else {
+            cardStore.updateReceipt(receipt)
         }
     }
 }
