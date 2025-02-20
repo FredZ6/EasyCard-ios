@@ -48,7 +48,7 @@ struct ReceiptsView: View {
         if sortOption == .date {
             let grouped = Dictionary(grouping: sorted) { receipt in
                 let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy年MM月"
+                formatter.dateFormat = "MMMM yyyy"
                 return formatter.string(from: receipt.date)
             }
             

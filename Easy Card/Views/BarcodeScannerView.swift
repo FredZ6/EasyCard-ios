@@ -84,7 +84,7 @@ class CameraController: NSObject, ObservableObject {
     override init() {
         super.init()
         setupCamera()
-        // 扫描线动画
+        // Scanning line animation
         withAnimation(.linear(duration: 1.5).repeatForever()) {
             scanningLineOffset = 50
         }

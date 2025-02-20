@@ -5,13 +5,13 @@ struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var cardStore: CardStore
     @State private var showingEditSheet = false
-    @State private var editedCard: Card  // 用于存储编辑中的卡片
+    @State private var editedCard: Card  // Store the card being edited
     
     let card: Card
     
     init(card: Card) {
         self.card = card
-        _editedCard = State(initialValue: card)  // 初始化编辑中的卡片
+        _editedCard = State(initialValue: card)  // Initialize the card being edited
     }
     
     @State private var barcodeImage: UIImage?
@@ -100,7 +100,7 @@ struct CardDetailView: View {
             updateBarcodeImage()
         }
         .onChange(of: editedCard.cardNumber) { _, _ in
-            // 当卡号改变时更新条形码
+            // Update barcode when card number changes
             updateBarcodeImage()
         }
         .sheet(isPresented: $showingEditSheet) {
@@ -120,7 +120,7 @@ struct CardDetailView: View {
         .sheet(isPresented: $showingNoteSheet) {
             NoteEditView(card: editedCard)
                 .onDisappear {
-                    // 当笔记编辑视图消失时，重新从 cardStore 获取更新后的卡片数据
+                    // When note edit view disappears, refresh card data from cardStore
                     if let updatedCard = cardStore.cards.first(where: { $0.id == editedCard.id }) {
                         editedCard = updatedCard
                     }
@@ -129,7 +129,7 @@ struct CardDetailView: View {
         .sheet(isPresented: $showingPhotosSheet) {
             PhotosView(card: editedCard)
                 .onDisappear {
-                    // 当 PhotosView 消失时，从 cardStore 获取最新的卡片数据
+                    // When PhotosView disappears, get the latest card data from cardStore
                     if let updatedCard = cardStore.cards.first(where: { $0.id == editedCard.id }) {
                         editedCard = updatedCard
                     }

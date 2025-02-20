@@ -1,7 +1,7 @@
 import SwiftUI
 import PhotosUI
 
-// 将 Coordinator 移到外部
+// Move Coordinator to outside
 final class ImagePickerCoordinator: NSObject, PHPickerViewControllerDelegate {
     private let images: Binding<[String]>
     private let dismiss: DismissAction
@@ -17,9 +17,9 @@ final class ImagePickerCoordinator: NSObject, PHPickerViewControllerDelegate {
                 if let image = image as? UIImage {
                     DispatchQueue.main.async {
                         if let data = image.jpegData(compressionQuality: 0.8) {
-                            // 创建唯一的文件名
+                            // Create unique filename
                             let filename = UUID().uuidString + ".jpg"
-                            // 获取文档目录路径
+                            // Get document directory path
                             if let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                                 let fileURL = path.appendingPathComponent(filename)
                                 try? data.write(to: fileURL)

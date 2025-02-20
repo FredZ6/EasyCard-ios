@@ -13,7 +13,7 @@ class CardStore: ObservableObject {
         loadCards()
         loadReceipts()
         
-        // 如果没有收据数据，添加示例数据
+        // If no receipts data, add sample data
         if receipts.isEmpty {
             receipts = [
                 Receipt(
@@ -95,7 +95,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // 加载收据
+    // Load receipts -> Changed from "加载收据"
     private func loadReceipts() {
         if let data = UserDefaults.standard.data(forKey: receiptsKey) {
             if let decoded = try? JSONDecoder().decode([Receipt].self, from: data) {
@@ -104,7 +104,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // 保存收据
+    // Save receipts -> Changed from "保存收据"
     private func saveReceipts() {
         if let encoded = try? JSONEncoder().encode(receipts) {
             UserDefaults.standard.set(encoded, forKey: receiptsKey)
@@ -114,7 +114,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // 添加收据
+    // Add receipt -> Changed from "添加收据"
     func addReceipt(_ receipt: Receipt) {
         print("📥 Starting to add receipt - Name: \(receipt.name)")
         print("📊 Before adding - Current receipts count: \(receipts.count)")
@@ -138,7 +138,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // 更新收据
+    // Update receipt -> Changed from "更新收据"
     func updateReceipt(_ receipt: Receipt) {
         if let index = receipts.firstIndex(where: { $0.id == receipt.id }) {
             receipts[index] = receipt
@@ -146,7 +146,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // 删除收据
+    // Delete receipt -> Changed from "删除收据"
     func deleteReceipt(_ receipt: Receipt) {
         receipts.removeAll { $0.id == receipt.id }
         saveReceipts()

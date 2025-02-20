@@ -10,6 +10,9 @@ struct PhotosView: View {
     @State private var imageSelection: [PhotosPickerItem] = []
     @State private var selectedImage: UIImage?
     @State private var showingImagePreview = false
+    @State private var showingImageSourceOptions = false
+    @State private var showingCamera = false
+    @State private var showingImagePicker = false
     
     init(card: Card) {
         _card = State(initialValue: card)
@@ -115,6 +118,15 @@ struct PhotosView: View {
                 }
             } message: {
                 Text("Are you sure you want to delete this photo?")
+            }
+            .confirmationDialog("Choose Photo Source", isPresented: $showingImageSourceOptions) {
+                Button("Take Photo") {
+                    showingCamera = true
+                }
+                Button("Choose from Library") {
+                    showingImagePicker = true
+                }
+                Button("Cancel", role: .cancel) {}
             }
         }
         .fullScreenCover(isPresented: $showingImagePreview) {

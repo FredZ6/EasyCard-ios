@@ -1,5 +1,5 @@
 import SwiftUI
-import Vision  // 添加 Vision 框架
+import Vision  // Add Vision framework
 
 struct AddCardView: View {
     @Environment(\.dismiss) private var dismiss
@@ -13,8 +13,8 @@ struct AddCardView: View {
     @State private var showingSourceSelection = false
     @State private var sourceType: UIImagePickerController.SourceType = .camera
     @State private var noteText = ""
-    @State private var showingAlert = false  // 添加警告状态
-    @State private var alertMessage = ""     // 添加警告信息
+    @State private var showingAlert = false  // Add alert state
+    @State private var alertMessage = ""     // Add alert message
     
     private let colors = [
         "#0000FF", "#FF0000", "#00AA88", 
@@ -124,7 +124,7 @@ struct AddCardView: View {
         dismiss()
     }
     
-    // 添加条形码识别方法
+    // Add barcode detection method
     private func detectBarcode(in image: UIImage) {
         guard let cgImage = image.cgImage else { return }
         
