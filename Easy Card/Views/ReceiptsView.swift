@@ -5,6 +5,19 @@ struct ReceiptsView: View {
     @State private var searchText = ""
     @State private var showingEditSheet = false
     @State private var selectedReceipt: Receipt?
+    @State private var sortOption: SortOption = .date
+    
+    enum SortOption {
+        case date
+        case name
+        
+        var title: String {
+            switch self {
+            case .date: return "Date"
+            case .name: return "Name"
+            }
+        }
+    }
     
     let columns = [
         GridItem(.flexible()),
@@ -19,12 +32,43 @@ struct ReceiptsView: View {
         }
         print("📋 Filtered receipts count: \(results.count)")
         print("📝 Current receipts: \(results.map { $0.name })")
-        return results
+        return results.sorted { first, second in
+            switch sortOption {
+            case .date:
+                return first.date > second.date
+            case .name:
+                return first.name.localizedCaseInsensitiveCompare(second.name) == .orderedAscending
+            }
+        }
+    }
+    
+    var groupedReceipts: [(String, [Receipt])] {
+        let sorted = filteredReceipts
+        
+        if sortOption == .date {
+            let grouped = Dictionary(grouping: sorted) { receipt in
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy年MM月"
+                return formatter.string(from: receipt.date)
+            }
+            
+            return grouped.map { ($0.key, $0.value) }
+                .sorted { $0.0 > $1.0 }
+        } else {
+            return [("All Receipts", sorted)]
+        }
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Simple Search Bar
+            Picker("Sort By", selection: $sortOption) {
+                ForEach([SortOption.date, .name], id: \.self) { option in
+                    Text(option.title).tag(option)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding()
+            
             HStack {
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -47,18 +91,31 @@ struct ReceiptsView: View {
             }
             .padding()
             
-            // Receipts Grid
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(filteredReceipts) { receipt in
-                        ReceiptCardView(receipt: receipt)
-                            .onTapGesture {
-                                selectedReceipt = receipt
-                                showingEditSheet = true
+                VStack(spacing: 24) {
+                    ForEach(groupedReceipts, id: \.0) { group in
+                        VStack(alignment: .leading, spacing: 16) {
+                            if sortOption == .date {
+                                Text(group.0)
+                                    .font(.headline)
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal)
                             }
+                            
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(group.1) { receipt in
+                                    ReceiptCardView(receipt: receipt)
+                                        .onTapGesture {
+                                            selectedReceipt = receipt
+                                            showingEditSheet = true
+                                        }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     }
                 }
-                .padding()
+                .padding(.vertical)
             }
         }
         .navigationTitle("Receipts")
@@ -91,7 +148,6 @@ struct ReceiptsView: View {
             if !newValue {
                 print("📋 Sheet dismissed")
                 selectedReceipt = nil
-                // 添加验证
                 print("📊 Current receipts after dismiss: \(cardStore.receipts.map { $0.name })")
             }
         }
@@ -109,16 +165,31 @@ struct ReceiptCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 8) {
             Spacer()
+            
             Text(receipt.name)
                 .font(.title3)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
+                .lineLimit(1)
             
-            Text(receipt.date.formatted(date: .abbreviated, time: .omitted))
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.8))  // Semi-transparent white
+            HStack {
+                Image(systemName: "calendar")
+                    .foregroundColor(.white.opacity(0.8))
+                    .font(.caption)
+                
+                Text(receipt.date.formatted(date: .abbreviated, time: .omitted))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            
+            if !receipt.note.isEmpty {
+                Text(receipt.note)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.6))
+                    .lineLimit(1)
+            }
         }
         .frame(height: 120)
         .padding()
