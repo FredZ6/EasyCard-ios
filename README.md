@@ -1,63 +1,55 @@
 # Easy Card
 
-Easy Card is an iOS app that helps you manage all your membership cards, loyalty cards, and store cards in one place. Never carry physical cards again!
+Easy Card is a user-friendly membership card management application that helps users digitally manage various membership cards, loyalty cards, and discount cards.
 
-## Features
+## Key Features
 
-### Card Management
-- Add cards manually or scan barcodes
-- Store card information including name, number, and notes
-- Generate barcodes for easy scanning at stores
-- Customize card colors for easy recognition
+- 📱 Digital Card Management
+- 🔍 Barcode Scanning and Generation
+- 📝 Card Notes Function
+- 📸 Receipt/Photo Management
+- 🎨 Custom Card Colors and Styles
+- 🔄 Real-time Data Synchronization
 
-### Photo Management
-- Attach photos to cards
-- Save card-related photos and receipts
-- Quick preview in card details
-- Save photos to device gallery
+## Technical Features
 
-### Smart Search
-- Search cards by name or number
-- Recent search history
-- Smart search suggestions
-- Quick access to frequently used cards
+- Modern UI built with SwiftUI
+- Barcode processing using Core Image
+- Photo management with PhotosUI
+- Local data persistence support
 
-### Sorting Options
-- Sort by name (A to Z)
-- Sort by name (Z to A)
-- Sort by newest first
-- Sort by oldest first
+## Main Views
 
-### Additional Features
-- Dark mode support
-- Localization (English & Chinese)
-- Secure local storage
-- Note-taking for each card
+- `CardListView`: Card list display
+- `CardDetailView`: Card detail information
+- `EditCardView`: Card editing interface
+- `PhotosView`: Photo management
+- `ReceiptsView`: Receipt management
+- `BarcodeScannerView`: Barcode scanning
+- `NoteEditView`: Note editing interface
 
-## Requirements
-- iOS 17.0 or later
-- Xcode 15.0 or later
-- Swift 5.9 or later
+## System Requirements
 
-## Installation
+- iOS 15.0 or later
+- Xcode 14.0 or later
+
+## Installation Guide
+
 1. Clone the repository
-2. Open `Easy Card.xcodeproj` in Xcode
-3. Build and run the project
+2. Open project in Xcode
+3. Select target device or simulator
+4. Click run button to build and launch the app
 
-## Privacy
-Easy Card respects your privacy:
-- All data is stored locally on your device
-- No data collection or tracking
-- Camera access only used for barcode scanning
-- Photo library access only used for saving/loading photos
+## Privacy Notice
+
+The app requires the following permissions:
+- Camera access (for barcode scanning)
+- Photo library access (for saving and managing photos)
 
 ## Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+
+Issues and Pull Requests are welcome to help improve this project.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
-- SwiftUI for the modern UI framework
-- AVFoundation for barcode scanning capabilities
-- Core Image for barcode generation 
+[Add your license information] 
