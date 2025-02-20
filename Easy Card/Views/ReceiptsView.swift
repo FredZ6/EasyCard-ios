@@ -55,20 +55,17 @@ struct ReceiptsView: View {
             return grouped.map { ($0.key, $0.value) }
                 .sorted { $0.0 > $1.0 }
         } else {
-            return [("All Receipts", sorted)]
+            let grouped = Dictionary(grouping: sorted) { receipt in
+                let firstChar = receipt.name.prefix(1).uppercased()
+                return firstChar.isEmpty ? "#" : firstChar
+            }
+            return grouped.map { ($0.key, $0.value) }
+                .sorted { $0.0 < $1.0 }
         }
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            Picker("Sort By", selection: $sortOption) {
-                ForEach([SortOption.date, .name], id: \.self) { option in
-                    Text(option.title).tag(option)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding()
-            
             HStack {
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -91,6 +88,15 @@ struct ReceiptsView: View {
             }
             .padding()
             
+            Picker("Sort By", selection: $sortOption) {
+                ForEach([SortOption.date, .name], id: \.self) { option in
+                    Text(option.title).tag(option)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.bottom)
+            
             ScrollView {
                 VStack(spacing: 24) {
                     ForEach(groupedReceipts, id: \.0) { group in
@@ -100,18 +106,37 @@ struct ReceiptsView: View {
                                     .font(.headline)
                                     .foregroundColor(.gray)
                                     .padding(.horizontal)
+                            } else {
+                                Text(group.0)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.primary)
+                                    .padding(.horizontal)
                             }
                             
-                            LazyVGrid(columns: columns, spacing: 16) {
-                                ForEach(group.1) { receipt in
-                                    ReceiptCardView(receipt: receipt)
-                                        .onTapGesture {
-                                            selectedReceipt = receipt
-                                            showingEditSheet = true
-                                        }
+                            if sortOption == .name {
+                                VStack(spacing: 8) {
+                                    ForEach(group.1) { receipt in
+                                        ReceiptRowView(receipt: receipt)
+                                            .onTapGesture {
+                                                selectedReceipt = receipt
+                                                showingEditSheet = true
+                                            }
+                                    }
                                 }
+                                .padding(.horizontal)
+                            } else {
+                                LazyVGrid(columns: columns, spacing: 16) {
+                                    ForEach(group.1) { receipt in
+                                        ReceiptCardView(receipt: receipt)
+                                            .onTapGesture {
+                                                selectedReceipt = receipt
+                                                showingEditSheet = true
+                                            }
+                                    }
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
                         }
                     }
                 }
@@ -197,6 +222,49 @@ struct ReceiptCardView: View {
         .background(backgroundColor)
         .cornerRadius(12)
         .shadow(radius: 2, x: 0, y: 1)
+    }
+}
+
+struct ReceiptRowView: View {
+    let receipt: Receipt
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(receipt.name)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                HStack {
+                    Image(systemName: "calendar")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    Text(receipt.date.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    if !receipt.note.isEmpty {
+                        Text("•")
+                            .foregroundColor(.gray)
+                        Text(receipt.note)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(10)
+        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
 
