@@ -31,11 +31,36 @@ struct Provider: TimelineProvider {
     }
     
     private func getRecentCardsFromUserDefaults() -> [RecentCard] {
+        print("📱 Widget trying to load cards")
         let userDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card")
-        let recentCardsData = userDefaults?.array(forKey: "recentCards") as? [Data] ?? []
-        return recentCardsData.compactMap { try? JSONDecoder().decode(RecentCard.self, from: $0) }
-            .prefix(6)
-            .map { $0 }
+        
+        // Read the card list order
+        guard let cardListData = userDefaults?.data(forKey: "cardList"),
+              let cardList = try? JSONDecoder().decode([String].self, from: cardListData) else {
+            print("❌ Failed to load card list from UserDefaults")
+            return []
+        }
+        print("📝 Loaded card list: \(cardList)")
+        
+        // Read all cards dictionary
+        guard let cardsData = userDefaults?.data(forKey: "cards"),
+              let cards = try? JSONDecoder().decode([String: CardData].self, from: cardsData) else {
+            print("❌ Failed to load cards dictionary from UserDefaults")
+            return []
+        }
+        print("💾 Loaded cards dictionary with \(cards.count) items")
+        
+        // Convert to RecentCard format following the cardList order
+        let recentCards = cardList.prefix(6).compactMap({ (cardId: String) -> RecentCard? in
+            guard let card = cards[cardId] else { return nil }
+            return RecentCard(
+                id: cardId,
+                name: card.name,
+                backgroundColor: card.backgroundColor
+            )
+        })
+        print("✅ Returning \(recentCards.count) cards for widget")
+        return recentCards
     }
     
     private func getSampleCards() -> [RecentCard] {
@@ -101,8 +126,6 @@ struct CardView: View {
 }
 
 struct EasyCardWidget: Widget {
-    private let userDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card")
-    
     let kind: String = "EasyCardWidget"
 
     var body: some WidgetConfiguration {
@@ -141,4 +164,11 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
+}
+
+// Add CardData struct for decoding
+private struct CardData: Codable {
+    let name: String
+    let backgroundColor: String
+    // Add other necessary fields but only decode what we need
 }

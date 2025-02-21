@@ -3,27 +3,16 @@ import SwiftUI
 import WidgetKit
 
 class CardStore: ObservableObject {
-    static let shared = CardStore()
-    
     @Published private(set) var cards: [Card] = []
     private let saveKey = "SavedCards"
+    private let userDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card")
     
     @Published private(set) var receipts: [Receipt] = []
     @Published var searchText = ""
     
     private let receiptsKey = "SavedReceipts"
     
-    private let userDefaults: UserDefaults
-    
     init() {
-        // Initialize with specific App Group suite name
-        if let groupUserDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card") {
-            self.userDefaults = groupUserDefaults
-        } else {
-            self.userDefaults = UserDefaults.standard
-            print("Warning: Could not access App Group UserDefaults")
-        }
-        
         loadCards()
         loadReceipts()
         
@@ -94,24 +83,65 @@ class CardStore: ObservableObject {
     }
     
     private func loadCards() {
-        if let data = userDefaults.data(forKey: saveKey) {
+        if let data = UserDefaults.standard.data(forKey: saveKey) {
             if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
                 cards = decoded
+                // 在加载卡片后立即同步到 widget
+                syncToWidget()
                 return
             }
         }
         cards = Card.sampleCards
+        // 如果使用示例卡片，也需要同步到 widget
+        syncToWidget()
     }
     
     private func saveCards() {
+        // 保存到标准 UserDefaults
         if let encoded = try? JSONEncoder().encode(cards) {
-            userDefaults.set(encoded, forKey: saveKey)
+            UserDefaults.standard.set(encoded, forKey: saveKey)
         }
+        
+        // 同步到 Widget 数据
+        syncToWidget()
+    }
+    
+    private func syncToWidget() {
+        print("📱 Syncing to widget - Card count: \(cards.count)")
+        
+        // 保存卡片列表顺序
+        let cardIds = cards.map { $0.id.uuidString }
+        if let encodedCardList = try? JSONEncoder().encode(cardIds) {
+            userDefaults?.set(encodedCardList, forKey: "cardList")
+            print("📝 Saved card list: \(cardIds)")
+        }
+        
+        // 保存卡片详细信息
+        let cardsDict = Dictionary(uniqueKeysWithValues: cards.map { card in
+            (card.id.uuidString, CardData(name: card.name, backgroundColor: card.backgroundColor))
+        })
+        
+        if let encodedCards = try? JSONEncoder().encode(cardsDict) {
+            userDefaults?.set(encodedCards, forKey: "cards")
+            print("💾 Saved cards dictionary with \(cardsDict.count) items")
+        }
+        
+        userDefaults?.synchronize()
+        
+        // 验证数据是否正确保存
+        if let savedCardListData = userDefaults?.data(forKey: "cardList"),
+           let savedCardList = try? JSONDecoder().decode([String].self, from: savedCardListData) {
+            print("✅ Verified card list in UserDefaults: \(savedCardList)")
+        }
+        
+        // 通知 Widget 更新
+        WidgetCenter.shared.reloadAllTimelines()
+        print("🔄 Widget timeline reloaded")
     }
     
     // Load receipts -> Changed from "加载收据"
     private func loadReceipts() {
-        if let data = userDefaults.data(forKey: receiptsKey) {
+        if let data = UserDefaults.standard.data(forKey: receiptsKey) {
             if let decoded = try? JSONDecoder().decode([Receipt].self, from: data) {
                 receipts = decoded
             }
@@ -121,7 +151,7 @@ class CardStore: ObservableObject {
     // Save receipts -> Changed from "保存收据"
     private func saveReceipts() {
         if let encoded = try? JSONEncoder().encode(receipts) {
-            userDefaults.set(encoded, forKey: receiptsKey)
+            UserDefaults.standard.set(encoded, forKey: receiptsKey)
             print("💿 Receipts saved to UserDefaults - Count: \(receipts.count)")
         } else {
             print("❌ Failed to encode receipts")
@@ -144,7 +174,7 @@ class CardStore: ObservableObject {
         print("💾 Saved to UserDefaults")
         
         // 验证保存
-        if let data = userDefaults.data(forKey: receiptsKey),
+        if let data = UserDefaults.standard.data(forKey: receiptsKey),
            let savedReceipts = try? JSONDecoder().decode([Receipt].self, from: data) {
             print("✅ Verified save - Saved receipts count: \(savedReceipts.count)")
         } else {
@@ -165,42 +195,10 @@ class CardStore: ObservableObject {
         receipts.removeAll { $0.id == receipt.id }
         saveReceipts()
     }
-    
-    func updateRecentCards(_ card: Card) {
-        let userDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card")
-        let recentCard = RecentCard(
-            id: card.id.uuidString,  // 将 UUID 转换为 String
-            name: card.name,
-            backgroundColor: card.backgroundColor
-        )
-        let encoder = JSONEncoder()
-        
-        if let encoded = try? encoder.encode(recentCard) {
-            var recentCardsData = userDefaults?.array(forKey: "recentCards") as? [Data] ?? []
-            // 移除已存在的相同卡片
-            recentCardsData.removeAll { cardData in
-                if let card = try? JSONDecoder().decode(RecentCard.self, from: cardData) {
-                    return card.id == recentCard.id
-                }
-                return false
-            }
-            // 添加到最前面
-            recentCardsData.insert(encoded, at: 0)
-            // 只保留最近6张
-            if recentCardsData.count > 6 {
-                recentCardsData = Array(recentCardsData.prefix(6))
-            }
-            userDefaults?.set(recentCardsData, forKey: "recentCards")
-            
-            // 通知 Widget 更新
-            WidgetCenter.shared.reloadAllTimelines()
-        }
-    }
 }
 
-// 添加 RecentCard 结构体定义（确保与 Widget 中的定义相同）
-struct RecentCard: Codable, Identifiable {
-    let id: String
+// 添加用于 Widget 的数据结构
+private struct CardData: Codable {
     let name: String
     let backgroundColor: String
 } 

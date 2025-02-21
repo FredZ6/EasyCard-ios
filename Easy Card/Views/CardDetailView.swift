@@ -98,7 +98,6 @@ struct CardDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             updateBarcodeImage()
-            cardStore.updateRecentCards(card)
         }
         .onChange(of: editedCard.cardNumber) { _, _ in
             // Update barcode when card number changes
