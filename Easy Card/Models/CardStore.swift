@@ -1,4 +1,6 @@
 import Foundation
+import SwiftUI
+import WidgetKit
 
 class CardStore: ObservableObject {
     @Published private(set) var cards: [Card] = []
@@ -151,4 +153,42 @@ class CardStore: ObservableObject {
         receipts.removeAll { $0.id == receipt.id }
         saveReceipts()
     }
+    
+    func updateRecentCards(_ card: Card) {
+        let userDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card")
+        let recentCard = RecentCard(
+            id: card.id.uuidString,  // 将 UUID 转换为 String
+            name: card.name,
+            backgroundColor: card.backgroundColor
+        )
+        let encoder = JSONEncoder()
+        
+        if let encoded = try? encoder.encode(recentCard) {
+            var recentCardsData = userDefaults?.array(forKey: "recentCards") as? [Data] ?? []
+            // 移除已存在的相同卡片
+            recentCardsData.removeAll { cardData in
+                if let card = try? JSONDecoder().decode(RecentCard.self, from: cardData) {
+                    return card.id == recentCard.id
+                }
+                return false
+            }
+            // 添加到最前面
+            recentCardsData.insert(encoded, at: 0)
+            // 只保留最近6张
+            if recentCardsData.count > 6 {
+                recentCardsData = Array(recentCardsData.prefix(6))
+            }
+            userDefaults?.set(recentCardsData, forKey: "recentCards")
+            
+            // 通知 Widget 更新
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+}
+
+// 添加 RecentCard 结构体定义（确保与 Widget 中的定义相同）
+struct RecentCard: Codable, Identifiable {
+    let id: String
+    let name: String
+    let backgroundColor: String
 } 
