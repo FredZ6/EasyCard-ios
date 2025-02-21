@@ -2,9 +2,12 @@ import SwiftUI
 
 struct CardListView: View {
     @EnvironmentObject private var cardStore: CardStore
-    @State private var showingAddCard = false
+    @AppStorage("selectedCardId", store: UserDefaults(suiteName: "group.com.fredz6.Easy-Card"))
+    private var selectedCardId: String?
+    @State private var showingAddSheet = false
     @State private var searchText = ""
     @State private var isEditMode = false
+    @State private var navigationPath = NavigationPath()
     
     var filteredCards: [Card] {
         if searchText.isEmpty {
@@ -68,19 +71,22 @@ struct CardListView: View {
                             }
                         } else {
                             ForEach(filteredCards) { card in
-                                NavigationLink(destination: CardDetailView(card: card)) {
+                                NavigationLink(value: card) {
                                     CardView(card: card)
                                 }
                             }
                         }
                         
-                        Button(action: { showingAddCard = true }) {
+                        Button(action: { showingAddSheet = true }) {
                             AddCardButton()
                         }
                     }
                     .padding()
                 }
             }
+        }
+        .navigationDestination(for: Card.self) { card in
+            CardDetailView(card: card)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -91,7 +97,7 @@ struct CardListView: View {
                     }
                 } else {
                     Menu {
-                        Button(action: { showingAddCard = true }) {
+                        Button(action: { showingAddSheet = true }) {
                             Label(LocalizedStringKey("Add Card"), systemImage: "plus.circle")
                         }
                         
@@ -105,8 +111,36 @@ struct CardListView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingAddCard) {
+        .sheet(isPresented: $showingAddSheet) {
             AddCardView()
+        }
+        .onChange(of: selectedCardId) { oldId, newId in
+            print("\n=== Card Selection Changed ===")
+            print("🔄 Old ID: \(String(describing: oldId))")
+            print("🔄 New ID: \(String(describing: newId))")
+            
+            if let idString = newId {
+                print("\n🔍 Card Search Started")
+                print("Looking for card with ID: \(idString)")
+                
+                if let uuid = UUID(uuidString: idString) {
+                    print("✅ Valid UUID: \(uuid)")
+                    print("📊 Available cards: \(cardStore.cards.map { "\($0.name): \($0.id)" }.joined(separator: "\n"))")
+                    
+                    if let card = cardStore.cards.first(where: { $0.id == uuid }) {
+                        print("✅ Found card: \(card.name)")
+                        navigationPath.append(card)
+                        print("➡️ Added to navigation path")
+                        selectedCardId = nil
+                        print("🧹 Cleared selectedCardId")
+                    } else {
+                        print("❌ Card not found in cardStore")
+                    }
+                } else {
+                    print("❌ Invalid UUID string: \(idString)")
+                }
+                print("=== Card Search Ended ===\n")
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct Card: Identifiable, Codable {
+struct Card: Identifiable, Codable, Hashable {
     var id: UUID
     var name: String
     var cardNumber: String
@@ -29,6 +29,16 @@ struct Card: Identifiable, Codable {
         Card(name: "Costco Wholesale", cardNumber: "111 849 441 757", logoName: "costco", backgroundColor: "#0088AA", shortName: "C"),
         Card(name: "GameStop", cardNumber: "123456789", logoName: "gamestop", backgroundColor: "#000000", shortName: "G")
     ]
+    
+    // 添加 Hashable 协议实现
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    // 添加相等性比较
+    static func == (lhs: Card, rhs: Card) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
 struct CardPhoto: Identifiable, Codable {

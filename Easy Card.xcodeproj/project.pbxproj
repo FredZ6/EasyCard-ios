@@ -577,6 +577,7 @@
 				DEVELOPMENT_TEAM = 99Q779D33K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Easy-Card-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相机来扫描会员卡条形码";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要访问相册来选择条形码图片";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -609,6 +610,7 @@
 				DEVELOPMENT_TEAM = 99Q779D33K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Easy-Card-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相机来扫描会员卡条形码";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要访问相册来选择条形码图片";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

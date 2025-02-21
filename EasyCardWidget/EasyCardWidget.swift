@@ -66,25 +66,19 @@ struct EasyCardWidgetEntryView : View {
     var entry: Provider.Entry
     
     var body: some View {
-        VStack(spacing: 8) {
-            Text("Recent Cards")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 8) {
-                ForEach(entry.recentCards) { card in
-                    Link(destination: URL(string: "easycard://card/\(card.id)")!) {
-                        CardView(card: card)
-                    }
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: 12) {
+            ForEach(entry.recentCards) { card in
+                Link(destination: URL(string: "easycard://open?id=\(card.id)&action=detail")!) {
+                    CardView(card: card)
                 }
             }
-            .padding(.horizontal, 8)
         }
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
     }
 }
 
@@ -92,16 +86,17 @@ struct CardView: View {
     let card: RecentCard
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: 10)
             .fill(Color(hex: card.backgroundColor))
             .overlay(
                 Text(card.name)
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
+                    .padding(.horizontal, 4)
             )
-            .frame(height: 40)
+            .frame(height: 50)
     }
 }
 
