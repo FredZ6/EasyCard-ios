@@ -70,15 +70,14 @@ struct EasyCardWidgetEntryView : View {
             GridItem(.flexible()),
             GridItem(.flexible()),
             GridItem(.flexible())
-        ], spacing: 12) {
+        ], spacing: 8) {
             ForEach(entry.recentCards) { card in
                 Link(destination: URL(string: "easycard://open?id=\(card.id)&action=detail")!) {
                     CardView(card: card)
                 }
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
+        .padding(8)
         .containerBackground(.fill.tertiary, for: .widget)
     }
 }
@@ -87,7 +86,7 @@ struct CardView: View {
     let card: RecentCard
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 10)
+        RoundedRectangle(cornerRadius: 12)
             .fill(Color(hex: card.backgroundColor))
             .overlay(
                 Text(card.name)
@@ -97,11 +96,13 @@ struct CardView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 4)
             )
-            .frame(height: 50)
+            .frame(height: 67)
     }
 }
 
 struct EasyCardWidget: Widget {
+    private let userDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card")
+    
     let kind: String = "EasyCardWidget"
 
     var body: some WidgetConfiguration {

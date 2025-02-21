@@ -3,6 +3,8 @@ import SwiftUI
 import WidgetKit
 
 class CardStore: ObservableObject {
+    static let shared = CardStore()
+    
     @Published private(set) var cards: [Card] = []
     private let saveKey = "SavedCards"
     
@@ -11,7 +13,17 @@ class CardStore: ObservableObject {
     
     private let receiptsKey = "SavedReceipts"
     
+    private let userDefaults: UserDefaults
+    
     init() {
+        // Initialize with specific App Group suite name
+        if let groupUserDefaults = UserDefaults(suiteName: "group.com.fredz6.Easy-Card") {
+            self.userDefaults = groupUserDefaults
+        } else {
+            self.userDefaults = UserDefaults.standard
+            print("Warning: Could not access App Group UserDefaults")
+        }
+        
         loadCards()
         loadReceipts()
         
@@ -82,7 +94,7 @@ class CardStore: ObservableObject {
     }
     
     private func loadCards() {
-        if let data = UserDefaults.standard.data(forKey: saveKey) {
+        if let data = userDefaults.data(forKey: saveKey) {
             if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
                 cards = decoded
                 return
@@ -93,13 +105,13 @@ class CardStore: ObservableObject {
     
     private func saveCards() {
         if let encoded = try? JSONEncoder().encode(cards) {
-            UserDefaults.standard.set(encoded, forKey: saveKey)
+            userDefaults.set(encoded, forKey: saveKey)
         }
     }
     
     // Load receipts -> Changed from "加载收据"
     private func loadReceipts() {
-        if let data = UserDefaults.standard.data(forKey: receiptsKey) {
+        if let data = userDefaults.data(forKey: receiptsKey) {
             if let decoded = try? JSONDecoder().decode([Receipt].self, from: data) {
                 receipts = decoded
             }
@@ -109,7 +121,7 @@ class CardStore: ObservableObject {
     // Save receipts -> Changed from "保存收据"
     private func saveReceipts() {
         if let encoded = try? JSONEncoder().encode(receipts) {
-            UserDefaults.standard.set(encoded, forKey: receiptsKey)
+            userDefaults.set(encoded, forKey: receiptsKey)
             print("💿 Receipts saved to UserDefaults - Count: \(receipts.count)")
         } else {
             print("❌ Failed to encode receipts")
@@ -132,7 +144,7 @@ class CardStore: ObservableObject {
         print("💾 Saved to UserDefaults")
         
         // 验证保存
-        if let data = UserDefaults.standard.data(forKey: receiptsKey),
+        if let data = userDefaults.data(forKey: receiptsKey),
            let savedReceipts = try? JSONDecoder().decode([Receipt].self, from: data) {
             print("✅ Verified save - Saved receipts count: \(savedReceipts.count)")
         } else {
