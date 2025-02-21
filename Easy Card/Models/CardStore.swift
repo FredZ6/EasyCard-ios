@@ -109,14 +109,14 @@ class CardStore: ObservableObject {
     private func syncToWidget() {
         print("📱 Syncing to widget - Card count: \(cards.count)")
         
-        // 保存卡片列表顺序
+        // Save card list order
         let cardIds = cards.map { $0.id.uuidString }
         if let encodedCardList = try? JSONEncoder().encode(cardIds) {
             userDefaults?.set(encodedCardList, forKey: "cardList")
             print("📝 Saved card list: \(cardIds)")
         }
         
-        // 保存卡片详细信息
+        // Save card details
         let cardsDict = Dictionary(uniqueKeysWithValues: cards.map { card in
             (card.id.uuidString, CardData(name: card.name, backgroundColor: card.backgroundColor))
         })
@@ -128,13 +128,13 @@ class CardStore: ObservableObject {
         
         userDefaults?.synchronize()
         
-        // 验证数据是否正确保存
+        // Verify saved data
         if let savedCardListData = userDefaults?.data(forKey: "cardList"),
            let savedCardList = try? JSONDecoder().decode([String].self, from: savedCardListData) {
             print("✅ Verified card list in UserDefaults: \(savedCardList)")
         }
         
-        // 通知 Widget 更新
+        // Notify Widget to update
         WidgetCenter.shared.reloadAllTimelines()
         print("🔄 Widget timeline reloaded")
     }
