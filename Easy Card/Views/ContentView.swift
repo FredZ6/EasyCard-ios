@@ -3,19 +3,17 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var cardStore: CardStore
     @State private var selectedTab = 0
-    @State private var selectedCard: Card?
+    @State private var navigationPath = NavigationPath()
     @Environment(\.openURL) private var openURL
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            NavigationStack {
+            NavigationStack(path: $navigationPath) {
                 CardListView()
                     .navigationTitle(LocalizedStringKey("Cards"))
-            }
-            .sheet(item: $selectedCard) { card in
-                NavigationStack {
-                    CardDetailView(card: card)
-                }
+                    .navigationDestination(for: Card.self) { card in
+                        CardDetailView(card: card)
+                    }
             }
             .tabItem {
                 Image(systemName: "creditcard")
@@ -46,8 +44,8 @@ struct ContentView: View {
             
             print("✅ Found card: \(card.name)")
             selectedTab = 0
-            selectedCard = card
-            print("➡️ Showing card detail")
+            navigationPath.append(card)
+            print("➡️ Navigating to card detail")
         }
     }
 }

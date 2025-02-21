@@ -79,6 +79,7 @@ struct EasyCardWidgetEntryView : View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
+        .containerBackground(.fill.tertiary, for: .widget)
     }
 }
 
@@ -110,6 +111,7 @@ struct EasyCardWidget: Widget {
         .configurationDisplayName("Recent Cards")
         .description("Quick access to your recently used cards.")
         .supportedFamilies([.systemMedium])
+        .contentMarginsDisabled()
     }
 }
 
