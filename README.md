@@ -11,6 +11,14 @@ Easy Card is a user-friendly membership card management application that helps u
 - 🎨 Custom Card Colors and Styles
 - 🔄 Real-time Data Synchronization
 
+## 💡 Usage Tips
+
+For the best user experience, we strongly recommend:
+1. Add the Easy Card Widget to the left side of your home screen
+2. When you need to show your membership card at a store, simply swipe right from the lock screen
+3. Quickly view and open the barcode for store staff to scan
+4. Say goodbye to unlocking your phone, finding the app, and searching for membership cards!
+
 ## App Screenshots
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
