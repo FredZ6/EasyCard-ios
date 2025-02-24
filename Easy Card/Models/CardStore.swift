@@ -86,13 +86,12 @@ class CardStore: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: saveKey) {
             if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
                 cards = decoded
-                // 在加载卡片后立即同步到 widget
                 syncToWidget()
                 return
             }
         }
         cards = Card.sampleCards
-        // 如果使用示例卡片，也需要同步到 widget
+        
         syncToWidget()
     }
     
@@ -102,7 +101,6 @@ class CardStore: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: saveKey)
         }
         
-        // 同步到 Widget 数据
         syncToWidget()
     }
     
@@ -139,7 +137,7 @@ class CardStore: ObservableObject {
         print("🔄 Widget timeline reloaded")
     }
     
-    // Load receipts -> Changed from "加载收据"
+    // Load receipts 
     private func loadReceipts() {
         if let data = UserDefaults.standard.data(forKey: receiptsKey) {
             if let decoded = try? JSONDecoder().decode([Receipt].self, from: data) {
@@ -148,7 +146,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // Save receipts -> Changed from "保存收据"
+    // Save receipts 
     private func saveReceipts() {
         if let encoded = try? JSONEncoder().encode(receipts) {
             UserDefaults.standard.set(encoded, forKey: receiptsKey)
@@ -158,7 +156,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // Add receipt -> Changed from "添加收据"
+    // Add receipt 
     func addReceipt(_ receipt: Receipt) {
         print("📥 Starting to add receipt - Name: \(receipt.name)")
         print("📊 Before adding - Current receipts count: \(receipts.count)")
@@ -173,7 +171,7 @@ class CardStore: ObservableObject {
         saveReceipts()
         print("💾 Saved to UserDefaults")
         
-        // 验证保存
+        
         if let data = UserDefaults.standard.data(forKey: receiptsKey),
            let savedReceipts = try? JSONDecoder().decode([Receipt].self, from: data) {
             print("✅ Verified save - Saved receipts count: \(savedReceipts.count)")
@@ -182,7 +180,7 @@ class CardStore: ObservableObject {
         }
     }
     
-    // Update receipt -> Changed from "更新收据"
+    // Update receipt 
     func updateReceipt(_ receipt: Receipt) {
         if let index = receipts.firstIndex(where: { $0.id == receipt.id }) {
             receipts[index] = receipt
@@ -190,14 +188,14 @@ class CardStore: ObservableObject {
         }
     }
     
-    // Delete receipt -> Changed from "删除收据"
+    // Delete receipt
     func deleteReceipt(_ receipt: Receipt) {
         receipts.removeAll { $0.id == receipt.id }
         saveReceipts()
     }
 }
 
-// 添加用于 Widget 的数据结构
+
 private struct CardData: Codable {
     let name: String
     let backgroundColor: String

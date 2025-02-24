@@ -6,7 +6,7 @@ struct Receipt: Identifiable, Codable {
     var name: String
     var date: Date
     var note: String
-    var images: [String] // 存储图片路径
+    var images: [String] 
     
     init(id: UUID = UUID(), name: String, date: Date, note: String = "", images: [String] = []) {
         self.id = id
