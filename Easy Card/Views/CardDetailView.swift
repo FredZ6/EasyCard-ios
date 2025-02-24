@@ -105,7 +105,7 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showingEditSheet) {
             NavigationStack {
-                EditCardView(card: editedCard)  // 直接传递 Card 而不是 Binding
+                EditCardView(card: editedCard)  
             }
         }
         .alert(LocalizedStringKey("Delete Confirmation"), isPresented: $showingDeleteAlert) {

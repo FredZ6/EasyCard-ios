@@ -54,7 +54,7 @@ Issues and Pull Requests are welcome to help improve this project.
 
 MIT License
 
-Copyright (c) 2024 [Your Name]
+Copyright (c) 2024 [Haifeng Zhang]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
