@@ -14,9 +14,9 @@ Easy Card is a user-friendly membership card management application that helps u
 ## App Screenshots
 
 <div align="center">
-  <img src="demo image/screenshot1.png" width="200" alt="App Screenshot 1"/>
-  <img src="demo image/screenshot2.png" width="200" alt="App Screenshot 2"/>
-  <img src="demo image/screenshot3.png" width="200" alt="App Screenshot 3"/>
+  <img src="demo-image/screenshot1.png" width="200" alt="App Screenshot 1"/>
+  <img src="demo-image/screenshot2.png" width="200" alt="App Screenshot 2"/>
+  <img src="demo-image/screenshot3.png" width="200" alt="App Screenshot 3"/>
 </div>
 
 ## Technical Features
